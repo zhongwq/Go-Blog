@@ -48,6 +48,8 @@ POST /auth
 	})
 	routeArticle()
 	routeComment()
+	routeUser()
+	routeAuth()
 	return rootRouter
 }
 
@@ -70,6 +72,35 @@ func routeArticle() {
 	sub.HandleFunc("/{tag:[a-z]+}", utils.HandlerCompose(
 		controllers.GetArticlesByTag,
 	)).Methods("GET")
+}
+
+func routeUser() {
+	sub := rootRouter.PathPrefix("/user").Subrouter()
+	sub.HandleFunc("allusers", utils.HandlerCompose(
+		controllers.GetAllUsers,
+	)).Methods("GET")
+	sub.HandleFunc("/register", utils.HandlerCompose(
+		controllers.CreateUser,
+	)).Methods("POST")
+	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(
+		controllers.GetUserByID,
+	)).Methods("GET")
+	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(
+		services.AuthenticationGuard,
+		controllers.UpdateUserByID,
+	)).Methods("PUT")
+
+	//login
+	sub.HandleFunc("/login", utils.HandlerCompose(
+		controllers.Auth,
+	)).Methods("POST")
+}
+
+func routeAuth() {
+	sub := rootRouter.PathPrefix("/api/auth").Subrouter()
+	sub.HandleFunc("/", utils.HandlerCompose(
+		controllers.Auth,
+	)).Methods("POST")
 }
 
 func routeComment() {
