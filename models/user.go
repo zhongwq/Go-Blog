@@ -12,6 +12,8 @@ type UserList struct {
 	UserID   int    `json:"id"`
 	Username string `json:"username"`
 	Email string `json:"email"`
+	Followers []int `json:"followers"`
+	Following []int `json:"following"`
 }
 
 type User struct {
@@ -20,16 +22,18 @@ type User struct {
 	Password string `json:"password"`
 	Email string `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
+	Followers []int `json:"followers,[]"`
+	Following []int `json:"following,[]"`
 }
 
-func GetAllUsers() []UserList {
+func GetAllUsers() []User {
 	db := &utils.DB{}
-	var Users []UserList
-	var user UserList
+	var Users []User
+	var user User
 	var UsersBytes map[string]string
 	UsersBytes = db.Scan("user")
 	if len(UsersBytes) == 0 {
-		return []UserList{}
+		return []User{}
 	}
 	for _, one := range UsersBytes {
 		err := json.Unmarshal([]byte(one), &user)
@@ -46,6 +50,8 @@ func CreateUser(user User) int {
 	id := db.GenerateID("user")
 	user.UserID = id
 	user.CreatedAt = time.Now()
+	user.Following = []int{}
+	user.Followers = []int{}
 	buff, err := json.Marshal(user)
 	if err != nil {
 		panic("JSON parsing error")
@@ -61,6 +67,20 @@ func GetUserByID(id int) *User {
 		return nil
 	}
 	user := User{}
+	err := json.Unmarshal(buff, &user)
+	if err != nil {
+		panic(err)
+	}
+	return &user
+}
+
+func GetUserByID_noPassword(id int) *UserList {
+	db := &utils.DB{}
+	buff := db.Get("user", strconv.Itoa(id))
+	if len(buff) == 0 {
+		return nil
+	}
+	user := UserList{}
 	err := json.Unmarshal(buff, &user)
 	if err != nil {
 		panic(err)

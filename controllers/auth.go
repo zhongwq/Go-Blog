@@ -37,10 +37,10 @@ func Auth(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 		if user != nil{
 			if user.Password == password {
 				token := services.GenerateAuthToken(user.UserID, username)
-				//json 转为定义的token类
+				//token 转化为json
 				buff, err = json.Marshal(token)
 
-				newuser := models.GetUserByID(user.UserID)
+				newuser := models.GetUserByID_noPassword(user.UserID)
 				data, err := json.Marshal(*newuser)
 				if err != nil {
 					return err

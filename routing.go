@@ -83,9 +83,10 @@ func routeUser() {
 		controllers.CreateUser,
 	)).Methods("POST")
 	sub.HandleFunc("/follow", utils.HandlerCompose(
-		controllers.GetUserByID,
-	)).Methods("GET")
-	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(
+		services.AuthenticationGuard,
+		controllers.FollowUserByID,
+	)).Methods("POST")
+	sub.HandleFunc("/unfollow", utils.HandlerCompose(
 		services.AuthenticationGuard,
 		controllers.UpdateUserByID,
 	)).Methods("PUT")
