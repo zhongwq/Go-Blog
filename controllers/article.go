@@ -22,6 +22,7 @@ func GetAllArticles(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	return utils.SendData(w, string(res), "OK", http.StatusOK)
 }
 
+
 func GetArticlesByTag(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	vars := mux.Vars(req)
 	tag := vars["tag"]

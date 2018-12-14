@@ -2,18 +2,20 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/GoProjectGroupForEducation/Go-Blog/services"
 
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 
-	"github.com/gorilla/mux"
 	"github.com/GoProjectGroupForEducation/Go-Blog/controllers"
+	"github.com/gorilla/mux"
 )
 
 var rootRouter *mux.Router
 
 func RootHandler() http.Handler {
+
 	rootRouter = mux.NewRouter()
 	rootRouter.HandleFunc("/help", func(w http.ResponseWriter, req *http.Request) {
 		str := `API list:
@@ -50,7 +52,22 @@ POST /auth
 	routeComment()
 	routeUser()
 	routeAuth()
+	routeStaticFile()
+	routeDownloadFile()
 	return rootRouter
+}
+
+func routeDownloadFile()  {
+	sub := rootRouter.PathPrefix("/upload").Subrouter()
+	sub.HandleFunc("", utils.HandlerCompose(
+		controllers.DownloadFile,
+	)).Methods("POST")
+}
+
+func routeStaticFile(){
+	root, _ := os.Getwd()
+	//fmt.Print(root)
+	rootRouter.PathPrefix("/static").Handler(http.StripPrefix("/static", http.FileServer(http.Dir(root+"/static/"))))
 }
 
 func routeArticle() {
