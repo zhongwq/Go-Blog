@@ -12,7 +12,7 @@ func init() {
 
 func main() {
 	serv := &http.Server{
-		Addr:    "127.0.0.1:3001",
+		Addr:    "0.0.0.0:3001",
 		Handler: RootHandler(),
 	}
 	fmt.Println("listen on 3001")
