@@ -2,14 +2,21 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/GoProjectGroupForEducation/Go-Blog/services"
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 )
 
 func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error  {
+	vars := mux.Vars(req)
+	filename := strings.Split(vars["filename"],".")
+
 	file, _, err := req.FormFile("uploadFile")
 	if err != nil {
 		return utils.SendData(w, "","INVALID_FILE", http.StatusBadRequest)
@@ -27,7 +34,12 @@ func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc)
 	//h := md5.New()
 	//token := fmt.Sprintf("%x", h.Sum(checksum))
 
-	fileName := "1"
+	//要登录后才能使用上传文件
+	header := req.Header
+	token := header.Get("Authorization")
+	user := services.GetCurrentUser(token)
+	timeStr:=time.Now().Format("20060102150405")  //当前时间的字符串，2006-01-02 15:04:05据说是golang的诞生时间，固定写法
+	fileName := user.Username + "at" +timeStr + "." + filename[1]
 	//fileEndings, err := mime.ExtensionsByType(filetype)
 	if err != nil {
 		return utils.SendData(w, "","CANT_READ_FILE_TYPE", http.StatusInternalServerError)
@@ -35,12 +47,10 @@ func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc)
 	root, _ := os.Getwd()
 	downloadFilePath := root + "/static/"
 
-	fmt.Printf("fking\n filetype: " )
-
-	newPath := downloadFilePath + fileName + ".ico"
+	newPath := downloadFilePath + fileName
 
 	//fmt.Printf("FileType: %s, File: %s\n", filetype, newPath)
-
+	fmt.Printf(newPath)
 	newFile, err := os.Create(newPath)
 	if err != nil {
 		return utils.SendData(w, "","CANT_WRITE_FILE", http.StatusInternalServerError)

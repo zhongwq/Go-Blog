@@ -58,8 +58,10 @@ POST /auth
 }
 
 func routeDownloadFile()  {
+	//要登录才能上传文件
 	sub := rootRouter.PathPrefix("/upload").Subrouter()
-	sub.HandleFunc("", utils.HandlerCompose(
+	sub.HandleFunc("/{filename}", utils.HandlerCompose(
+		services.AuthenticationGuard,
 		controllers.DownloadFile,
 	)).Methods("POST")
 }

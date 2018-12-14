@@ -63,6 +63,6 @@ func AuthenticationGuard(w http.ResponseWriter, req *http.Request, next utils.Ne
 	if authenticateToken(token) {
 		return next()
 	} else {
-		panic(utils.Exception{"Unauthorized", http.StatusUnauthorized})
+		panic(utils.Exception{"Need to login first", http.StatusUnauthorized})
 	}
 }
