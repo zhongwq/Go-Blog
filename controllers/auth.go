@@ -39,7 +39,16 @@ func Auth(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 				token := services.GenerateAuthToken(user.UserID, username)
 				//json 转为定义的token类
 				buff, err = json.Marshal(token)
-				return utils.SendData(w, string(buff), "OK", http.StatusOK)
+
+				newuser := models.GetUserByID(user.UserID)
+				data, err := json.Marshal(*newuser)
+				if err != nil {
+					return err
+				}
+				return utils.SendData(w, `{` +
+					`"user":` + string(data) + `,` +
+					`"token":` + string(buff) +
+					`}`, "OK", http.StatusOK)
 			}else {
 				return utils.SendData(w, string(buff), "Wrong password", http.StatusBadRequest)
 			}
