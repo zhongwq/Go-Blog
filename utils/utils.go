@@ -45,7 +45,6 @@ func SendData(w http.ResponseWriter, data string, msg string, status int) error 
 		for i, one := range strbuff {
 			buff[i] = byte(one)
 		}
-		fmt.Println(buff)
 	}
 	w.WriteHeader(status)
 

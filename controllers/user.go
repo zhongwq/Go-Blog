@@ -45,7 +45,7 @@ func CreateUser(w http.ResponseWriter, req *http.Request, next utils.NextFunc) e
 		return err
 	}
 
-	token := services.GenerateAuthToken(id)
+	token := services.GenerateAuthToken(id, user.Username)
 	buff, err = json.Marshal(token)
 
 	return utils.SendData(w, `{` +
@@ -55,6 +55,24 @@ func CreateUser(w http.ResponseWriter, req *http.Request, next utils.NextFunc) e
 }
 
 func GetUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return err
+	}
+	user := models.GetUserByID(id)
+	if user == nil {
+		return utils.SendData(w, "{}", "Not Found", http.StatusNotFound)
+	}
+	data, err := json.Marshal(*user)
+	if err != nil {
+		return err
+	}
+	return utils.SendData(w, string(data), "OK", http.StatusOK)
+}
+
+
+func GetUserByUsername(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	vars := mux.Vars(req)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -88,6 +106,7 @@ func UpdateUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 		return err
 	}
 	isUpdated := models.UpdateUserByID(id, user)
+	//如果通过id找不到用户就创建新用户
 	if !isUpdated {
 		id = models.CreateUser(user)
 		return utils.SendData(w, `{"id": "`+strconv.Itoa(id)+`"}`, "Created", http.StatusCreated)

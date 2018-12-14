@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/GoProjectGroupForEducation/Go-Blog/models"
 	"github.com/GoProjectGroupForEducation/Go-Blog/services"
 	"io/ioutil"
 	"log"
@@ -22,15 +23,32 @@ func Auth(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 		return err
 	}
 
-	if _, ok := body["id"]; ok {
-		//存在
-		id := int(body["id"].(float64))
-		token := services.GenerateAuthToken(id)
-		//json 转为定义的token类
-		buff, err = json.Marshal(token)
-		return utils.SendData(w, string(buff), "OK", http.StatusOK)
+	if _, ok := body["username"]; ok {
+		//password为空
+		if _, ok := body["password"]; !ok {
+			return utils.SendData(w, string(buff), "Please input password", http.StatusBadRequest)
+		}
+		//username不为空
+		password := string(body["password"].(string))
+		username := string(body["username"].(string))
+		//从数据库中搜索username，判断password是否匹配
+		user := models.GetUserByUsername(username)
+
+		if user != nil{
+			if user.Password == password {
+				token := services.GenerateAuthToken(user.UserID, username)
+				//json 转为定义的token类
+				buff, err = json.Marshal(token)
+				return utils.SendData(w, string(buff), "OK", http.StatusOK)
+			}else {
+				return utils.SendData(w, string(buff), "Wrong password", http.StatusBadRequest)
+			}
+		}else {
+			return utils.SendData(w, string(buff), "User not found", http.StatusBadRequest)
+		}
+
 	}else {
 		log.Println(req.Method, req.URL.String(), http.StatusBadRequest)
-		return utils.SendData(w, string(buff), "Id not found", http.StatusBadRequest)
+		return utils.SendData(w, string(buff), "Please input username", http.StatusBadRequest)
 	}
 }

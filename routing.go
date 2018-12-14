@@ -76,13 +76,13 @@ func routeArticle() {
 
 func routeUser() {
 	sub := rootRouter.PathPrefix("/user").Subrouter()
-	sub.HandleFunc("allusers", utils.HandlerCompose(
+	sub.HandleFunc("/allusers", utils.HandlerCompose(
 		controllers.GetAllUsers,
 	)).Methods("GET")
 	sub.HandleFunc("/register", utils.HandlerCompose(
 		controllers.CreateUser,
 	)).Methods("POST")
-	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(
+	sub.HandleFunc("/follow", utils.HandlerCompose(
 		controllers.GetUserByID,
 	)).Methods("GET")
 	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(

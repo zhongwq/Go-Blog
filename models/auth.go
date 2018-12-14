@@ -10,6 +10,7 @@ type AuthToken struct {
 	// TokenID      int    `json:"id"`
 	Token        string `json:"token"`
 	AuthorizedID int    `json:"authorized_id"`
+	Username     string `json:"username"`
 	ExpiredTime  string `json:"expired_time"`
 }
 

@@ -15,7 +15,7 @@ import (
 
 var checksum = []byte("heng-is-a-very-handsome-boy")
 
-func GenerateAuthToken(userID int) models.AuthToken {
+func GenerateAuthToken(userID int, username string) models.AuthToken {
 	h := md5.New()
 	expiredTime := time.Now().UnixNano()/1e6 + 1000*60*60*3 // expired time is 3 hours
 	source := strconv.FormatInt(expiredTime, 10) + strconv.Itoa(userID)
@@ -25,6 +25,7 @@ func GenerateAuthToken(userID int) models.AuthToken {
 		// 0,
 		token,
 		userID,
+		username,
 		strconv.FormatInt(expiredTime, 10),
 	}
 	models.CreateToken(authToken)

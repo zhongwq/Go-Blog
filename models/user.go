@@ -68,6 +68,31 @@ func GetUserByID(id int) *User {
 	return &user
 }
 
+func GetUserByUsername(username string) *User {
+	db := &utils.DB{}
+	id := -1
+	var usertemp UserList
+	var UsersBytes map[string]string
+	UsersBytes = db.Scan("user")
+	for _, one := range UsersBytes {
+		json.Unmarshal([]byte(one), &usertemp)
+		if usertemp.Username == username{
+			id = usertemp.UserID
+			break;
+		}
+	}
+	buff := db.Get("user", strconv.Itoa(id))
+	if len(buff) == 0 {
+		return nil
+	}
+	user := User{}
+	err := json.Unmarshal(buff, &user)
+	if err != nil {
+		panic(err)
+	}
+	return &user
+}
+
 func UpdateUserByID(id int, user User) bool {
 	db := &utils.DB{}
 	buff := db.Get("user", strconv.Itoa(id))
