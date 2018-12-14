@@ -54,7 +54,7 @@ POST /auth
 }
 
 func routeArticle() {
-	sub := rootRouter.PathPrefix("/api/articles").Subrouter()
+	sub := rootRouter.PathPrefix("/articles").Subrouter()
 	sub.HandleFunc("/", utils.HandlerCompose(
 		controllers.GetAllArticles,
 	)).Methods("GET")
@@ -69,8 +69,11 @@ func routeArticle() {
 		services.AuthenticationGuard,
 		controllers.UpdateArticleByID,
 	)).Methods("PUT")
-	sub.HandleFunc("/{tag:[a-z]+}", utils.HandlerCompose(
+	sub.HandleFunc("/tag/{tag}", utils.HandlerCompose(
 		controllers.GetArticlesByTag,
+	)).Methods("GET")
+	sub.HandleFunc("/user/{id:[0-9]+}", utils.HandlerCompose(
+		controllers.GetArticlesByUserID,
 	)).Methods("GET")
 }
 
@@ -104,11 +107,15 @@ func routeAuth() {
 }
 
 func routeComment() {
-	sub := rootRouter.PathPrefix("/api/articles/{article_id:[0-9]+}/comments").Subrouter()
+	sub := rootRouter.PathPrefix("/articles/{article_id:[0-9]+}/comments").Subrouter()
 	sub.HandleFunc("/", utils.HandlerCompose(
 		services.AuthenticationGuard,
 		controllers.CreateComment,
 	)).Methods("POST")
+	sub.HandleFunc("/{comment_id:[0-9]+}", utils.HandlerCompose(
+		services.AuthenticationGuard,
+		controllers.UpdateCommnetById,
+	)).Methods("PUT")
 	sub.HandleFunc("/", utils.HandlerCompose(
 		controllers.GetAllComments,
 	)).Methods("GET")

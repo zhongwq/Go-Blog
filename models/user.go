@@ -68,6 +68,20 @@ func GetUserByID(id int) *User {
 	return &user
 }
 
+func GetUserListByID(id int) *UserList {
+	db := &utils.DB{}
+	buff := db.Get("user", strconv.Itoa(id))
+	if len(buff) == 0 {
+		return nil
+	}
+	user := UserList{}
+	err := json.Unmarshal(buff, &user)
+	if err != nil {
+		panic(err)
+	}
+	return &user
+}
+
 func GetUserByUsername(username string) *User {
 	db := &utils.DB{}
 	id := -1
