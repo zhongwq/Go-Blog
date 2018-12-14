@@ -28,6 +28,8 @@ func GetISOTimeNow() string {
 func SendData(w http.ResponseWriter, data string, msg string, status int) error {
 	var buff []byte
 	header := w.Header()
+	header.Set("Access-Control-Allow-Origin", "*")             //允许访问所有域
+	header.Add("Access-Control-Allow-Headers", "Content-Type") //header的类型
 	header.Add("Content-type", "application/json")
 	res := sendDataType{status, msg, data, time.Now().Format(time.RFC3339)}
 	if(status != 200){
@@ -46,6 +48,7 @@ func SendData(w http.ResponseWriter, data string, msg string, status int) error 
 		fmt.Println(buff)
 	}
 	w.WriteHeader(status)
+
 	_, err := w.Write(buff)
 	if err != nil {
 		return err
