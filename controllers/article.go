@@ -22,11 +22,23 @@ func GetAllArticles(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	return utils.SendData(w, string(res), "OK", http.StatusOK)
 }
 
-
 func GetArticlesByTag(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	vars := mux.Vars(req)
 	tag := vars["tag"]
 	res, err := json.Marshal(models.GetArticlesByTag(tag))
+	if err != nil {
+		return err
+	}
+	return utils.SendData(w, string(res), "OK", http.StatusOK)
+}
+
+func GetArticlesByUserID(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+	vars := mux.Vars(req)
+	userid, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return err
+	}
+	res, err := json.Marshal(models.GetArticleByUserID(userid))
 	if err != nil {
 		return err
 	}
@@ -48,7 +60,7 @@ func CreateArticle(w http.ResponseWriter, req *http.Request, next utils.NextFunc
 	id := models.CreateArticle(article)
 	return utils.SendData(w, `{
   "id": `+strconv.Itoa(id)+`
-}`, "OK", http.StatusOK)
+}`, "Create successfully", http.StatusOK)
 }
 
 func GetArticleByID(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
@@ -61,16 +73,7 @@ func GetArticleByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	if article == nil {
 		return utils.SendData(w, "{}", "Not Found", http.StatusNotFound)
 	}
-	author := models.GetUserByID(article.Author)
-	result := make(map[string]interface{})
-	result["id"] = article.ArticleID
-	result["title"] = article.Title
-	result["content"] = article.Content
-	result["author_id"] = article.Author
-	result["author"] = author.Username
-	result["created_at"] = article.CreatedAt
-	result["updated_at"] = article.UpdatedAt
-	data, err := json.Marshal(result)
+	data, err := json.Marshal(article)
 	if err != nil {
 		panic(err)
 	}
@@ -78,6 +81,7 @@ func GetArticleByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 }
 
 func UpdateArticleByID(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+	author := services.GetCurrentUser(req.Header.Get("Authorization"))
 	var article = models.Article{}
 	buff, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -88,16 +92,13 @@ func UpdateArticleByID(w http.ResponseWriter, req *http.Request, next utils.Next
 	if err != nil {
 		return err
 	}
-	article.ArticleID = id
+	article.ID = id
+	article.Author = author.UserID
 	article.UpdatedAt = time.Now()
 	err = json.Unmarshal(buff, &article)
 	if err != nil {
 		return err
 	}
-	isUpdated := models.UpdateArticleByID(id, article)
-	if !isUpdated {
-		id = models.CreateArticle(article)
-		return utils.SendData(w, `{"id": "`+strconv.Itoa(id)+`"}`, "Created", http.StatusCreated)
-	}
-	return utils.SendData(w, "{}", "OK", http.StatusOK)
+	models.UpdateArticleByID(article)
+	return utils.SendData(w, "{}", "Update successfully", http.StatusOK)
 }

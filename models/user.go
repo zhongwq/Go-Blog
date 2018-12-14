@@ -126,3 +126,17 @@ func UpdateUserByID(id int, user User) bool {
 	db.Set("user", strconv.Itoa(id), string(buff))
 	return true
 }
+
+func GetUserListByID(id int) *UserList {
+	db := &utils.DB{}
+	buff := db.Get("user", strconv.Itoa(id))
+	if len(buff) == 0 {
+		return nil
+	}
+	user := UserList{}
+	err := json.Unmarshal(buff, &user)
+	if err != nil {
+		panic(err)
+	}
+	return &user
+}
