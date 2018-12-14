@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"Go-Blog/utils"
+	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 )
 
 type ArticleList struct {

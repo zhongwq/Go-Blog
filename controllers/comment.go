@@ -8,15 +8,12 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"Go-Blog/models"
+	"github.com/GoProjectGroupForEducation/Go-Blog/models"
 
-	"Go-Blog/services"
-	"Go-Blog/utils"
+	"github.com/GoProjectGroupForEducation/Go-Blog/services"
+	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 )
 
-// {
-// 	 "content": "hello world!"
-// }
 func CreateComment(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	vars := mux.Vars(req)
 	articleID, err := strconv.Atoi(vars["article_id"])

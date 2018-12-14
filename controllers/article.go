@@ -9,9 +9,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"Go-Blog/models"
-	"Go-Blog/services"
-	"Go-Blog/utils"
+	"github.com/GoProjectGroupForEducation/Go-Blog/models"
+	"github.com/GoProjectGroupForEducation/Go-Blog/services"
+	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 )
 
 func GetAllArticles(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {

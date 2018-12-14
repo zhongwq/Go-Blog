@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"Go-Blog/utils"
+	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 )
 
 func Test_Auth(t *testing.T) {

@@ -3,12 +3,12 @@ package main
 import (
 	"net/http"
 
-	"Go-Blog/services"
+	"github.com/GoProjectGroupForEducation/Go-Blog/services"
 
-	"Go-Blog/utils"
+	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 
 	"github.com/gorilla/mux"
-	"Go-Blog/controllers"
+	"github.com/GoProjectGroupForEducation/Go-Blog/controllers"
 )
 
 var rootRouter *mux.Router
