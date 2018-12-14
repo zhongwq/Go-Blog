@@ -17,8 +17,8 @@ func Auth(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 		return err
 	}
 	body := make(map[string]interface{})
-	err = json.Unmarshal(buff, &body)
 
+	err = json.Unmarshal(buff, &body)
 	if err != nil {
 		return err
 	}

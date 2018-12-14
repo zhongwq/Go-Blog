@@ -6,51 +6,53 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"os"
 )
 
 func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error  {
-	//file, _, err := req.FormFile("uploadFile")
-	//if err != nil {
-	//	return utils.SendData(w, "","INVALID_FILE", http.StatusBadRequest)
-	//}
-	//defer file.Close()
-	//fileBytes, err := ioutil.ReadAll(file)
-	//if err != nil {
-	//	return utils.SendData(w, "","INVALID_FILE", http.StatusBadRequest)
-	//}
-	////判定文件类型
+	file, _, err := req.FormFile("uploadFile")
+	if err != nil {
+		return utils.SendData(w, "","INVALID_FILE", http.StatusBadRequest)
+	}
+	defer file.Close()
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return utils.SendData(w, "","INVALID_FILE", http.StatusBadRequest)
+	}
+	//判定文件类型
 	//filetype := http.DetectContentType(fileBytes)
-	//
-	////产生随机的token用作文件名
-	////var checksum = []byte("heng-is-a-very-handsome-boy")
-	////h := md5.New()
-	////token := fmt.Sprintf("%x", h.Sum(checksum))
-	//
-	//fileName := "1"
+
+	//产生随机的token用作文件名
+	//var checksum = []byte("heng-is-a-very-handsome-boy")
+	//h := md5.New()
+	//token := fmt.Sprintf("%x", h.Sum(checksum))
+
+	fileName := "1"
 	//fileEndings, err := mime.ExtensionsByType(filetype)
-	//if err != nil {
-	//	return utils.SendData(w, "","CANT_READ_FILE_TYPE", http.StatusInternalServerError)
-	//}
-	//root, _ := os.Getwd()
-	//downloadFilePath := root + "/static/"
-	//
-	//fmt.Printf("fking\n filetype: " )
-	//
-	//newPath := downloadFilePath + fileName + ".ico"
-	//
+	if err != nil {
+		return utils.SendData(w, "","CANT_READ_FILE_TYPE", http.StatusInternalServerError)
+	}
+	root, _ := os.Getwd()
+	downloadFilePath := root + "/static/"
+
+	fmt.Printf("fking\n filetype: " )
+
+	newPath := downloadFilePath + fileName + ".ico"
+
 	//fmt.Printf("FileType: %s, File: %s\n", filetype, newPath)
-	//
-	//newFile, err := os.Create(newPath)
-	//if err != nil {
-	//	return utils.SendData(w, "","CANT_WRITE_FILE", http.StatusInternalServerError)
-	//}
-	//defer newFile.Close()
-	//if _, err := newFile.Write(fileBytes); err != nil {
-	//	return utils.SendData(w, "","CANT_WRITE_FILE", http.StatusInternalServerError)
-	//}
+
+	newFile, err := os.Create(newPath)
+	if err != nil {
+		return utils.SendData(w, "","CANT_WRITE_FILE", http.StatusInternalServerError)
+	}
+	defer newFile.Close()
+	if _, err := newFile.Write(fileBytes); err != nil {
+		return utils.SendData(w, "","CANT_WRITE_FILE", http.StatusInternalServerError)
+	}
 
 
-	getMultiPart(req)
+	//getMultiPart(req)
+
 	return utils.SendData(w, "New file name: " , "Upload file successfully", http.StatusOK)
 }
 
@@ -90,9 +92,6 @@ func getFormData(form *multipart.Form) {
 	//获取 multi-part/form中的文件数据
 	for _, v := range form.File {
 		for i := 0; i < len(v); i++ {
-			fmt.Println("file part ", i, "-->")
-			fmt.Println("fileName   :", v[i].Filename)
-			fmt.Println("part-header:", v[i].Header)
 			f, _ := v[i].Open()
 			buf, _ := ioutil.ReadAll(f)
 			fmt.Println("file-content", string(buf))
