@@ -33,7 +33,6 @@ GET, POST /user
 GET, POST /tags
   GET, PUT /tags/{tag_id}
 
-POST /auth
 `
 		w.WriteHeader(200)
 		w.Write([]byte(str))
@@ -51,7 +50,6 @@ POST /auth
 	routeArticle()
 	routeComment()
 	routeUser()
-	routeAuth()
 	routeStaticFile()
 	routeDownloadFile()
 	return rootRouter
@@ -110,18 +108,14 @@ func routeUser() {
 	)).Methods("POST")
 	sub.HandleFunc("/unfollow", utils.HandlerCompose(
 		services.AuthenticationGuard,
-		controllers.UpdateUserByID,
-	)).Methods("PUT")
+		controllers.UnfollowUserByID,
+	)).Methods("POST")
+	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(
+		controllers.GetUserById,
+		)).Methods("GET")
 
 	//login
 	sub.HandleFunc("/login", utils.HandlerCompose(
-		controllers.Auth,
-	)).Methods("POST")
-}
-
-func routeAuth() {
-	sub := rootRouter.PathPrefix("/api/auth").Subrouter()
-	sub.HandleFunc("/", utils.HandlerCompose(
 		controllers.Auth,
 	)).Methods("POST")
 }

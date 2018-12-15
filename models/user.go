@@ -11,10 +11,20 @@ import (
 type UserList struct {
 	UserID   int    `json:"id"`
 	Username string `json:"username"`
-	Email string `json:"email"`
+	Email string 	`json:"email"`
 	Followers []int `json:"followers"`
 	Following []int `json:"following"`
 }
+
+type UserDetail struct {
+	UserID   int    	`json:"id"`
+	Username string 	`json:"username"`
+	Email string 		`json:"email"`
+	Followers []int 	`json:"followers"`
+	Following []int 	`json:"following"`
+	Articles  []ArticleList `json:"articles"`
+}
+
 
 type User struct {
 	UserID    int       `json:"id, omitempty"`
@@ -68,6 +78,21 @@ func GetUserByID(id int) *User {
 	}
 	user := User{}
 	err := json.Unmarshal(buff, &user)
+	if err != nil {
+		panic(err)
+	}
+	return &user
+}
+
+func GetUserDetailByID(id int) *UserDetail {
+	db := &utils.DB{}
+	buff := db.Get("user", strconv.Itoa(id))
+	if len(buff) == 0 {
+		return nil
+	}
+	user := UserDetail{}
+	err := json.Unmarshal(buff, &user)
+	user.Articles = GetArticleByUserID(id)
 	if err != nil {
 		panic(err)
 	}

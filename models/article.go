@@ -86,7 +86,7 @@ func GetArticleByID(id int) *ArticleList {
 
 func GetArticleByUserID(id int) []ArticleList {
 	db := &utils.DB{}
-	var articles []ArticleList
+	articles := []ArticleList{}
 	var article ArticleList
 	var articlesBytes map[string]string
 	articlesBytes = db.Scan("article")
@@ -95,7 +95,7 @@ func GetArticleByUserID(id int) []ArticleList {
 	}
 	for _, one := range articlesBytes {
 		err := json.Unmarshal([]byte(one), &article)
-		if article.Author.UserID == id {
+		if article.AuthorId == id {
 			article.Author = *GetUserListByID(article.AuthorId)
 			article.Comments = GetAllCommentsByArticleID(article.ID)
 			articles = append(articles, article)

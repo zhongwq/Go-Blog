@@ -82,13 +82,11 @@ func FollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	//不能重复follow
 	for _, one := range followUser.Followers  {
 		if one == currentUser.UserID{
-			return utils.SendData(w, "", "You have followed him, do not follow again.", http.StatusBadRequest)
+			return utils.SendData(w, "{}", "You have followed him, do not follow again.", http.StatusBadRequest)
 		}
 	}
 	followUser.Followers = append(followUser.Followers, currentUser.UserID)
 	currentUser.Following = append(currentUser.Following, followUser.UserID)
-	fmt.Println(len(followUser.Followers))
-	fmt.Println(len(currentUser.Following))
 	models.UpdateUserByID(followUser.UserID, *followUser)
 	models.UpdateUserByID(currentUser.UserID, *currentUser)
 	if followUser == nil {
@@ -97,7 +95,7 @@ func FollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	if err != nil {
 		return err
 	}
-	return utils.SendData(w, "", "follow successfully", http.StatusOK)
+	return utils.SendData(w, "{}", "follow successfully", http.StatusOK)
 }
 
 
@@ -124,7 +122,7 @@ func UnfollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextF
 	}
 	//不能unfollow自己
 	if unfollowUser.UserID == currentUser.UserID {
-		return utils.SendData(w, "", "Cannot unfollow yourself.", http.StatusBadRequest)
+		return utils.SendData(w, "{}", "Cannot unfollow yourself.", http.StatusBadRequest)
 	}
 	//不能unfollow你没有follow的人
 	index := -1
@@ -133,34 +131,54 @@ func UnfollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextF
 			index = i
 		}
 	}
+
+
+
 	//不能unfollow你没有follow的人
 	if index == -1{
 		return utils.SendData(w, "{}", "You cannot unfollow a person whom you haven`t follow.", http.StatusBadRequest)
 	}
-	unfollowUser.Followers = append(unfollowUser.Followers[:index], unfollowUser.Followers[index+1:]...)
+	if index == len(unfollowUser.Followers) - 1 {
+		unfollowUser.Followers = append(unfollowUser.Followers[:index], unfollowUser.Followers[index+1:]...)
+	} else {
+		if index == 0 {
+			unfollowUser.Followers = []int{};
+		} else {
+			unfollowUser.Followers = unfollowUser.Followers[:index]
+		}
+	}
 
 	for i, one := range currentUser.Following  {
 		if one == currentUser.UserID{
 			index = i
 		}
 	}
-	currentUser.Following = append(currentUser.Following[:index], currentUser.Following[index+1:]...)
+	if index == len(currentUser.Following) - 1 {
+		currentUser.Following = append(currentUser.Following[:index], currentUser.Following[index+1:]...)
+	} else {
+		if index == 0 {
+			currentUser.Following = []int{};
+		} else {
+			currentUser.Following = currentUser.Following[:index]
+		}
+	}
 
 
 	models.UpdateUserByID(unfollowUser.UserID, *unfollowUser)
 	models.UpdateUserByID(currentUser.UserID, *currentUser)
 
-	return utils.SendData(w, "", "Unfollow successfully", http.StatusOK)
+	return utils.SendData(w, "{}", "Unfollow successfully", http.StatusOK)
 }
 
 
-func GetUserByUsername(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+func GetUserById(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	vars := mux.Vars(req)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		return err
 	}
-	user := models.GetUserByID(id)
+	var user = &models.UserDetail{}
+	user = models.GetUserDetailByID(id)
 	if user == nil {
 		return utils.SendData(w, "{}", "Not Found", http.StatusNotFound)
 	}

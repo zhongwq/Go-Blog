@@ -20,3 +20,5 @@ Go-Blog
 
 .vscode/
 *.db
+
+static/*
