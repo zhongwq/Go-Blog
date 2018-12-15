@@ -92,6 +92,10 @@ func routeArticle() {
 	sub.HandleFunc("/user/{id:[0-9]+}", utils.HandlerCompose(
 		controllers.GetArticlesByUserID,
 	)).Methods("GET")
+	sub.HandleFunc("/concerning", utils.HandlerCompose(
+		services.AuthenticationGuard,
+		controllers.GetConcernArticles,
+	)).Methods("GET")
 }
 
 func routeUser() {

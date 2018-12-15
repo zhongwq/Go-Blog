@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/GoProjectGroupForEducation/Go-Blog/services"
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
@@ -14,6 +15,10 @@ import (
 	"time"
 )
 
+type FileInfo struct {
+	Filename string `json:"imgpath"`
+}
+
 func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error  {
 	vars := mux.Vars(req)
 
@@ -21,12 +26,12 @@ func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc)
 
 	file, _, err := req.FormFile("uploadFile")
 	if err != nil {
-		return utils.SendData(w, "","INVALID_FILE", http.StatusBadRequest)
+		return utils.SendData(w, "{}","INVALID_FILE", http.StatusBadRequest)
 	}
 	defer file.Close()
 	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return utils.SendData(w, "","INVALID_FILE", http.StatusBadRequest)
+		return utils.SendData(w, "{}","INVALID_FILE", http.StatusBadRequest)
 	}
 	//判定文件类型
 	//filetype := http.DetectContentType(fileBytes)
@@ -47,7 +52,7 @@ func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc)
 	models.UpdateUserByID(user.UserID,*user)
 	//fileEndings, err := mime.ExtensionsByType(filetype)
 	if err != nil {
-		return utils.SendData(w, "","CANT_READ_FILE_TYPE", http.StatusInternalServerError)
+		return utils.SendData(w, "{}","CANT_READ_FILE_TYPE", http.StatusInternalServerError)
 	}
 	root, _ := os.Getwd()
 	downloadFilePath := root + "/static/"
@@ -58,17 +63,21 @@ func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc)
 	fmt.Printf(newPath)
 	newFile, err := os.Create(newPath)
 	if err != nil {
-		return utils.SendData(w, "","CANT_WRITE_FILE", http.StatusInternalServerError)
+		return utils.SendData(w, "{}","CANT_WRITE_FILE", http.StatusInternalServerError)
 	}
 	defer newFile.Close()
 	if _, err := newFile.Write(fileBytes); err != nil {
-		return utils.SendData(w, "","CANT_WRITE_FILE", http.StatusInternalServerError)
+		return utils.SendData(w, "{}","CANT_WRITE_FILE", http.StatusInternalServerError)
 	}
 
-
+	fileInfo := FileInfo{fileName}
 	//getMultiPart(req)
+	data, err := json.Marshal(fileInfo)
 
-	return utils.SendData(w, "New file name: " , "Upload file successfully", http.StatusOK)
+	if err != nil {
+		return utils.SendData(w, "{}","Error when marshal!", http.StatusInternalServerError)
+	}
+	return utils.SendData(w, string(data), "Upload file successfully", http.StatusOK)
 }
 
 

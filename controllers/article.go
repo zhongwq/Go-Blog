@@ -45,6 +45,20 @@ func GetArticlesByUserID(w http.ResponseWriter, req *http.Request, next utils.Ne
 	return utils.SendData(w, string(res), "OK", http.StatusOK)
 }
 
+func GetConcernArticles(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+	author := services.GetCurrentUser(req.Header.Get("Authorization"))
+	articleList := []models.ArticleList{}
+	for _, one := range author.Following {
+		userArticles := models.GetArticleByUserID(one)
+		articleList = append(articleList, userArticles...)
+	}
+	res, err := json.Marshal(articleList)
+	if err != nil {
+		return err
+	}
+	return utils.SendData(w, string(res), "OK", http.StatusOK)
+}
+
 func CreateArticle(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	var article = models.Article{}
 	author := services.GetCurrentUser(req.Header.Get("Authorization"))

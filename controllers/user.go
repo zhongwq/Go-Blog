@@ -40,6 +40,7 @@ func CreateUser(w http.ResponseWriter, req *http.Request, next utils.NextFunc) e
 	if tempuser != nil{
 		return utils.SendData(w, string(buff), "Username has been registered, retry.", http.StatusBadRequest)
 	}
+	user.Iconpath = "1.ico"
 	id := models.CreateUser(user)
 
 	newuser := models.GetUserByID(id)
