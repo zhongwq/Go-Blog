@@ -60,7 +60,7 @@ func routeDownloadFile()  {
 	sub := rootRouter.PathPrefix("/upload").Subrouter()
 	sub.HandleFunc("/{filename}", utils.HandlerCompose(
 		services.AuthenticationGuard,
-		controllers.DownloadFile,
+		controllers.DownloadPostFile,
 	)).Methods("POST")
 }
 
