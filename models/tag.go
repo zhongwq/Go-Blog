@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
-	"strconv"
 )
 
 type Tag struct {
@@ -12,14 +11,24 @@ type Tag struct {
 
 func CreateTag(tag string) {
 	db := &utils.DB{}
-	id := db.GenerateID("tag")
-	tags := ScanTag()
-	for _, val := range tags {
-		if tag == val.Content {
-			return
+
+	if !isTagExist(tag) {
+		tagItem := Tag{tag}
+		buff, err := json.Marshal(tagItem)
+		if err != nil {
+			panic("JSON parsing error")
 		}
+		db.Set("tag", tag, string(buff))
 	}
-	db.Set("tag", strconv.Itoa(id), tag)
+}
+
+func isTagExist(content string) bool {
+	db := &utils.DB{}
+	buff := db.Get("tag", content)
+	if len(buff) == 0 {
+		return false
+	}
+	return true
 }
 
 func ScanTag() []Tag {

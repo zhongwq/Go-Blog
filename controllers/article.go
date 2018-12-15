@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -121,6 +122,7 @@ func UpdateArticleByID(w http.ResponseWriter, req *http.Request, next utils.Next
 	article.Author = author.UserID
 	article.UpdatedAt = time.Now()
 	err = json.Unmarshal(buff, &article)
+	fmt.Println(article.Tags)
 	if err != nil {
 		return err
 	}

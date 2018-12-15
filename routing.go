@@ -51,6 +51,7 @@ GET, POST /tags
 	routeComment()
 	routeUser()
 	routeStaticFile()
+	routeTag()
 	routeDownloadFile()
 	return rootRouter
 }
@@ -155,7 +156,6 @@ func routeComment() {
 func routeTag() {
 	sub := rootRouter.PathPrefix("/tag").Subrouter()
 	sub.HandleFunc("/", utils.HandlerCompose(
-		services.AuthenticationGuard,
 		controllers.GetAllTag,
-	)).Methods("POST")
+	)).Methods("GET")
 }
