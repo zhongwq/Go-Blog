@@ -151,3 +151,11 @@ func routeComment() {
 		controllers.GetAllComments,
 	)).Methods("GET")
 }
+
+func routeTag() {
+	sub := rootRouter.PathPrefix("/tag").Subrouter()
+	sub.HandleFunc("/", utils.HandlerCompose(
+		services.AuthenticationGuard,
+		controllers.GetAllTag,
+	)).Methods("POST")
+}

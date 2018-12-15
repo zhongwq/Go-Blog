@@ -9,6 +9,12 @@ import (
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 )
 
+type ArticlePage struct {
+	Number   int `json: "number"`
+	Articles []ArticleList `json: "articles"`
+}
+
+
 type ArticleList struct {
 	ID 				  int    		`json:"id"`
 	Author    		  UserList    	`json:"author"`
@@ -16,7 +22,7 @@ type ArticleList struct {
 	Content   		  string    	`json:"content"`
 	Comments		  []CommentList	`json:"comments"`
 	Title     		  string 		`json:"title"`
-	Tags	  		  []string  	`json:"tags"`
+	Tags	  		  []Tag  		`json:"tags"`
 	UpdatedAt 		  string 		`json:"updated_at"`
 }
 
@@ -24,7 +30,7 @@ type Article struct {
 	ID 		  int       `json:"id, omitempty"`
 	Author    int       `json:"author_id"`
 	Title     string    `json:"title"`
-	Tags	  []string  `json:"tags"`
+	Tags	  []Tag		`json:"tags"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -133,7 +139,7 @@ func GetArticlesByTag(tag string) []ArticleList {
 	for _, one := range articlesBytes {
 		err := json.Unmarshal([]byte(one), &article)
 		for _,v := range article.Tags {
-			if v == tag {
+			if v.Content == tag {
 				article.Author = *GetUserListByID(article.AuthorId)
 				article.Comments = GetAllCommentsByArticleID(article.ID)
 				articles = append(articles, article)
@@ -142,6 +148,29 @@ func GetArticlesByTag(tag string) []ArticleList {
 		if err != nil {
 			panic(err)
 		}
+	}
+	return articles
+}
+
+func GetArticlesPerPage(pageNum int) ArticlePage {
+	db := &utils.DB{}
+	var articles ArticlePage
+	var article ArticleList
+	articlesBytes := db.Scan("article")
+	if len(articlesBytes) == 0 {
+		return ArticlePage{0, []ArticleList{}}
+	}
+	articles.Number = len(articlesBytes)
+	var i = 0
+	for _, one := range articlesBytes {
+		err := json.Unmarshal([]byte(one), &article)
+		if i >= (pageNum-1)*8 && i < pageNum * 8 {
+			articles.Articles = append(articles.Articles, article)
+		}
+		if err != nil {
+			panic(err)
+		}
+		i = i + 1
 	}
 	return articles
 }

@@ -15,6 +15,17 @@ import (
 )
 
 func GetAllArticles(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+	req.ParseForm()
+	if len(req.Form["pageNum"]) > 0{
+		num, err := strconv.Atoi(req.Form["pageNum"][0])
+		if err == nil {
+			res, _ := json.Marshal(models.GetArticlesPerPage(num))
+			if err != nil {
+				return err
+			}
+			return utils.SendData(w, string(res), "OK", http.StatusOK)
+		}
+	}
 	res, err := json.Marshal(models.GetAllArticles())
 	if err != nil {
 		return err
