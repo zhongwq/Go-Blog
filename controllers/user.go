@@ -132,8 +132,6 @@ func UnfollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextF
 		}
 	}
 
-
-
 	//不能unfollow你没有follow的人
 	if index == -1{
 		return utils.SendData(w, "{}", "You cannot unfollow a person whom you haven`t follow.", http.StatusBadRequest)
@@ -213,5 +211,39 @@ func UpdateUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	}
 	return utils.SendData(w, "{}", "OK", http.StatusOK)
 }
+
+
+func GetUserFollower(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return err
+	}
+
+	users := models.GetUserFollowers(id)
+
+	data, err := json.Marshal(users)
+	if err != nil {
+		return err
+	}
+	return utils.SendData(w, string(data), "OK", http.StatusOK)
+}
+
+func GetUserFollowing(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return err
+	}
+
+	users := models.GetUserFollowing(id)
+
+	data, err := json.Marshal(users)
+	if err != nil {
+		return err
+	}
+	return utils.SendData(w, string(data), "OK", http.StatusOK)
+}
+
 
 

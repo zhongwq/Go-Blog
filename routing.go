@@ -113,7 +113,12 @@ func routeUser() {
 	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(
 		controllers.GetUserById,
 		)).Methods("GET")
-
+	sub.HandleFunc("/{id:[0-9]+}/follower", utils.HandlerCompose(
+		controllers.GetUserFollower,
+		)).Methods("GET")
+	sub.HandleFunc("/{id:[0-9]+}/following", utils.HandlerCompose(
+		controllers.GetUserFollowing,
+		)).Methods("GET")
 	//login
 	sub.HandleFunc("/login", utils.HandlerCompose(
 		controllers.Auth,

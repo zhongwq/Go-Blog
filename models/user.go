@@ -165,3 +165,21 @@ func GetUserListByID(id int) *UserList {
 	}
 	return &user
 }
+
+func GetUserFollowing(id int) []UserList {
+	users := []UserList{}
+	user := GetUserByID(id)
+	for _, one := range user.Following {
+		users = append(users, *GetUserListByID(one))
+	}
+	return users
+}
+
+func GetUserFollowers(id int) []UserList {
+	users := []UserList{}
+	user := GetUserByID(id)
+	for _, one := range user.Followers {
+		users = append(users, *GetUserListByID(one))
+	}
+	return users
+}
