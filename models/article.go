@@ -66,6 +66,9 @@ func CreateArticle(article Article) int {
 	article.ID = id
 	article.CreatedAt = time.Now()
 	article.UpdatedAt = time.Now()
+	for _, val := range article.Tags {
+		CreateTag(val.Content)
+	}
 	buff, err := json.Marshal(article)
 	if err != nil {
 		panic("JSON parsing error")
@@ -120,6 +123,9 @@ func UpdateArticleByID(article Article) bool {
 		return false
 	}
 	buff, err := json.Marshal(article)
+	for _, val := range article.Tags {
+		CreateTag(val.Content)
+	}
 	if err != nil {
 		panic("JSON parsing error")
 	}
