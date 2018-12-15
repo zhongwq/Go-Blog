@@ -5,6 +5,7 @@ import (
 	"github.com/GoProjectGroupForEducation/Go-Blog/services"
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 	"github.com/gorilla/mux"
+	"github.com/GoProjectGroupForEducation/Go-Blog/models"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 
 func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error  {
 	vars := mux.Vars(req)
+
 	filename := strings.Split(vars["filename"],".")
 
 	file, _, err := req.FormFile("uploadFile")
@@ -40,6 +42,9 @@ func DownloadFile(w http.ResponseWriter, req *http.Request, next utils.NextFunc)
 	user := services.GetCurrentUser(token)
 	timeStr:=time.Now().Format("20060102150405")  //当前时间的字符串，2006-01-02 15:04:05据说是golang的诞生时间，固定写法
 	fileName := user.Username + "at" +timeStr + "." + filename[1]
+
+	user.Iconpath = fileName
+	models.UpdateUserByID(user.UserID,*user)
 	//fileEndings, err := mime.ExtensionsByType(filetype)
 	if err != nil {
 		return utils.SendData(w, "","CANT_READ_FILE_TYPE", http.StatusInternalServerError)

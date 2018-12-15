@@ -213,6 +213,38 @@ func UpdateUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 }
 
 
+
+func UpdateIcon(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+	buff, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		return err
+	}
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return err
+	}
+	user := models.GetUserByID(id)
+
+	iconpath, _ := vars["filename"]
+
+	user.Iconpath = iconpath
+
+
+	err = json.Unmarshal(buff, &user)
+	if err != nil {
+		return err
+	}
+	isUpdated := models.UpdateUserByID(id, *user)
+	//如果通过id找不到用户就创建新用户
+	if !isUpdated {
+		id = models.CreateUser(*user)
+		return utils.SendData(w, `{"id": "`+strconv.Itoa(id)+`"}`, "Created", http.StatusCreated)
+	}
+	return utils.SendData(w, "{}", "OK", http.StatusOK)
+}
+
+
 func GetUserFollower(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	vars := mux.Vars(req)
 	id, err := strconv.Atoi(vars["id"])

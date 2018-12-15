@@ -106,10 +106,18 @@ func routeUser() {
 		services.AuthenticationGuard,
 		controllers.FollowUserByID,
 	)).Methods("POST")
+	sub.HandleFunc("/icon/{filename}", utils.HandlerCompose(
+		services.AuthenticationGuard,
+		controllers.DownloadFile,
+	)).Methods("PUT")
 	sub.HandleFunc("/unfollow", utils.HandlerCompose(
 		services.AuthenticationGuard,
 		controllers.UnfollowUserByID,
 	)).Methods("POST")
+	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(
+		services.AuthenticationGuard,
+		controllers.UpdateUserByID,
+	)).Methods("PUT")
 	sub.HandleFunc("/{id:[0-9]+}", utils.HandlerCompose(
 		controllers.GetUserById,
 		)).Methods("GET")

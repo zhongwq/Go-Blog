@@ -14,6 +14,7 @@ type UserList struct {
 	Email string 	`json:"email"`
 	Followers []int `json:"followers"`
 	Following []int `json:"following"`
+	Iconpath string `json:"iconpath"`
 }
 
 type UserDetail struct {
@@ -23,6 +24,7 @@ type UserDetail struct {
 	Followers []int 	`json:"followers"`
 	Following []int 	`json:"following"`
 	Articles  []ArticleList `json:"articles"`
+	Iconpath string `json:"iconpath"`
 }
 
 
@@ -34,6 +36,7 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	Followers []int `json:"followers,[]"`
 	Following []int `json:"following,[]"`
+	Iconpath string `json:"iconpath"`
 }
 
 func GetAllUsers() []User {
