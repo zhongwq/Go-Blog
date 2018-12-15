@@ -189,7 +189,7 @@ func GetUserById(w http.ResponseWriter, req *http.Request, next utils.NextFunc) 
 }
 
 func UpdateUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
-	var user = models.User{}
+	var tmpUser = models.User{}
 	buff, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		return err
@@ -199,18 +199,22 @@ func UpdateUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	if err != nil {
 		return err
 	}
-	user.UserID = id
-	err = json.Unmarshal(buff, &user)
+	curUser := models.GetUserByID(id)
+	err = json.Unmarshal(buff, &tmpUser)
 	if err != nil {
 		return err
 	}
-	isUpdated := models.UpdateUserByID(id, user)
+	if tmpUser.Password == "" {
+		curUser.Email = tmpUser.Email
+		curUser.Username = tmpUser.Username
+	}
+
+	isUpdated := models.UpdateUserByID(id, *curUser)
 	//如果通过id找不到用户就创建新用户
 	if !isUpdated {
-		id = models.CreateUser(user)
-		return utils.SendData(w, `{"id": "`+strconv.Itoa(id)+`"}`, "Created", http.StatusCreated)
+		return utils.SendData(w, "{}", "Error when updating", http.StatusBadRequest)
 	}
-	return utils.SendData(w, "{}", "OK", http.StatusOK)
+	return utils.SendData(w, "{}", "Update successfully!", http.StatusOK)
 }
 
 
