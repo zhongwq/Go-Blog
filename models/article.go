@@ -170,7 +170,7 @@ func GetArticlesPerPage(pageNum int) ArticlePage {
 	var i = 0
 	for _, one := range articlesBytes {
 		err := json.Unmarshal([]byte(one), &article)
-		if i >= (pageNum-1)*8 && i < pageNum * 8 {
+		if i >= (pageNum-1)*6 && i < pageNum * 6 {
 			articles.Articles = append(articles.Articles, article)
 		}
 		if err != nil {

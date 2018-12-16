@@ -19,7 +19,7 @@ func RootHandler() http.Handler {
 	rootRouter = mux.NewRouter()
 	rootRouter.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		str := `API list:
-GET, POST /articles 
+GET, POST /articles/?pageNum={pageNum}
   GET /articles/user/{user_id}
   GET /articles/tag/{tag_content}
   GET /articles/concerning
