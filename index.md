@@ -21,6 +21,14 @@ npm install
 npm run dev
 ```
 
+若是前后端主机不一致，需要自行配置前端的proxyTable(用于跨域请求)，其在config/index.js里，可改为后端对应的target，默认配置为api请求转发到localhost:8081端口
+
+![屏幕快照 2018-12-16 下午1.05.38](https://lh3.googleusercontent.com/-7m_tNl8Uk54/XBXdP-GR9mI/AAAAAAAAAJ0/XXc1WGSF3bEZo1KHaByTypHIiH6kbCTVQCHMYCw/I/%255BUNSET%255D)
+
+
+
+
+
 ##### 后端
 后段部分直接通过执行以下go get命令进行安装
 
@@ -89,6 +97,15 @@ go get github.com/GoProjectGroupForEducation/Go-Blog
 
 ### 前端使用效果截图
 
+登陆页面
+![屏幕快照 2018-12-16 下午1.03.00](https://lh3.googleusercontent.com/-AEKyqYxBfus/XBXclVf9XjI/AAAAAAAAAJg/9tKAHbDS_lYpVt3j6sCsnhNxs0j5rvOaACHMYCw/I/%255BUNSET%255D)
+
+
+注册页面
+![屏幕快照 2018-12-16 下午1.03.06](https://lh3.googleusercontent.com/-1kYzCsLtrMQ/XBXcmwqVOjI/AAAAAAAAAJo/NqchOXhtnM0HlWhUGV46M7h8mXtEDxZKwCHMYCw/I/%255BUNSET%255D)
+
+
+
 未登陆，主页（可以通过点击标签查看当前标签下的所有文章，博客列表可以点击自己写的博客才有的list（右下角3个点来点击Edit进行编辑））
 
 ![屏幕快照 2018-12-16 上午8.33.35](https://lh3.googleusercontent.com/-4sjTduxwQG0/XBWekE47hkI/AAAAAAAAAIc/G48UQHfIR-wHq7NqxUwQdaUB70qG3COpQCHMYCw/I/%255BUNSET%255D)
@@ -119,5 +136,9 @@ AddPost页面(拖入图片即可自动发送图片到后端，传回图片静态
 评论也可以编辑，和博客一样点击3个点的列表点击Edit就可编辑，不过Comment较为简单，所以只弹出一个弹窗提供更改
 
 ![屏幕快照 2018-12-16 上午8.47.03](https://lh3.googleusercontent.com/-5TDr8fshcZo/XBWgrO2tG-I/AAAAAAAAAJQ/ywREL_-ke5o5XaypORpwiYdMt72mIBsAACHMYCw/I/%255BUNSET%255D)
+
+用户还可以更改头像等的个人信息
+![屏幕快照 2018-12-16 下午1.01.47](https://lh3.googleusercontent.com/-H8vVIZsLPtI/XBXcWCm3X0I/AAAAAAAAAJc/7OAd4R035v4tPCWJ0fK9TIBp8GdDR_kJgCHMYCw/I/%255BUNSET%255D)
+
 
 
