@@ -4,6 +4,10 @@ layout: default
 
 # 项目文档
 
+### 仓库地址
+[前端](https://github.com/GoProjectGroupForEducation/MinimalBlog-Vue)
+[后端](https://github.com/GoProjectGroupForEducation/Go-Blog)
+
 ### 安装指南
 ##### 前端
 

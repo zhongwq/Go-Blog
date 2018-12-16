@@ -17,22 +17,29 @@ var rootRouter *mux.Router
 func RootHandler() http.Handler {
 
 	rootRouter = mux.NewRouter()
-	rootRouter.HandleFunc("/help", func(w http.ResponseWriter, req *http.Request) {
+	rootRouter.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		str := `API list:
-
 GET, POST /articles 
+  GET /articles/user/{user_id}
+  GET /articles/tag/{tag_content}
+  GET /articles/concerning
   GET, PUT /articles/{article_id}
-    GET, POST /articles/{article_id}/comments
-      GET, PUT /articles/{article_id}/comments/{comment_id}
-
+  GET, POST /articles/{article_id}/comments
+  GET, PUT /articles/{article_id}/comments/{comment_id}
 
 GET, POST /user
-  GET, GET /user/allusers
+  GET /user/allusers
   GET, PUT /user/{user_id}
+  GET /user/{user_id}/follower
+  GET /user/{user_id}/following
+  POST /user/login
+  POST /user/register
+  POST /user/icon/{filename}
+  POST /user/follow
+  POST /user/unfollow
 
-GET, POST /tags
-  GET, PUT /tags/{tag_id}
-
+GET, POST /tag
+  GET, PUT /tag/{tag_id}
 `
 		w.WriteHeader(200)
 		w.Write([]byte(str))
