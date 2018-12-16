@@ -12,10 +12,10 @@ func init() {
 
 func main() {
 	serv := &http.Server{
-		Addr:    "0.0.0.0:3001",
+		Addr:    "0.0.0.0:8081",
 		Handler: RootHandler(),
 	}
-	fmt.Println("listen on 3001")
+	fmt.Println("listen on 8081")
 	err := serv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
