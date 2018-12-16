@@ -25,10 +25,6 @@ npm run dev
 
 ![屏幕快照 2018-12-16 下午1.05.38](https://lh3.googleusercontent.com/-7m_tNl8Uk54/XBXdP-GR9mI/AAAAAAAAAJ0/XXc1WGSF3bEZo1KHaByTypHIiH6kbCTVQCHMYCw/I/%255BUNSET%255D)
 
-
-
-
-
 ##### 后端
 后段部分直接通过执行以下go get命令进行安装
 
@@ -38,6 +34,7 @@ go get github.com/GoProjectGroupForEducation/Go-Blog
 
 执行完成后，我们就可以通过`./Go-Blog`打开服务了
 
+所用博客数据压缩到了data.zip压缩包，可以把其解压到原根目录，替换data.db以及static文件夹
 
 ### 项目博客来源
 
@@ -96,6 +93,8 @@ go get github.com/GoProjectGroupForEducation/Go-Blog
 
 
 ### 前端使用效果截图
+
+> 前端使用的Font awesome库可能在部分网络环境(墙内)中会有异常，碰到这种情况可以挂个梯子，加载一次，之后就有缓存可以直接访问了
 
 登陆页面
 ![屏幕快照 2018-12-16 下午1.03.00](https://lh3.googleusercontent.com/-AEKyqYxBfus/XBXclVf9XjI/AAAAAAAAAJg/9tKAHbDS_lYpVt3j6sCsnhNxs0j5rvOaACHMYCw/I/%255BUNSET%255D)
