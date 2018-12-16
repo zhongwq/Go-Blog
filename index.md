@@ -6,6 +6,7 @@ layout: default
 
 ### 仓库地址
 [前端](https://github.com/GoProjectGroupForEducation/MinimalBlog-Vue)
+
 [后端](https://github.com/GoProjectGroupForEducation/Go-Blog)
 
 ### 安装指南
@@ -35,6 +36,54 @@ go get github.com/GoProjectGroupForEducation/Go-Blog
 组内成员个人平时所写的博客
 
 ### API设计
+
+##### article
+
+- `GET /articles/?pageNum={pageNum}` 根据请求的页数pageNum获取当前页数的文章
+- `GET /articles/user/{user_id}` 根据用户id获取该用户的文章
+- `GET /articles/tag/{tag_content}` 根据tag获取含有该tag的文章
+- `GET /articles/concerning` 获取已关注的文章
+- `GET, PUT /articles/{article_id}` 更新或获取含有相应id的文章
+- `GET, POST /articles/{article_id}/comments` 更新或获取含有相应id文章的评论
+- `GET, PUT /articles/{article_id}/comments/{comment_id}` 更新或获取含有相应id文章的含有对应id的评论
+
+##### user
+
+- `GET /user/allusers` 获取所有用户
+- `GET, PUT /user/{user_id}` 获取含有对应id的用户
+- `GET /user/{user_id}/follower`  获取含有对应id的用户的follower
+- `GET /user/{user_id}/following` 获取含有对应id的用户follow的用户
+- `POST /user/login` 登陆请求
+- `POST /user/register` 注册请求
+- `POST /user/icon/{filename}` 更新用户头像
+- `POST /user/follow` follow某用户
+- `POST /user/unfollow` 取消follow某用户
+
+##### tag
+
+- `GET /tag` 获取所有已存在的tag
+
+##### Example
+
+- 用户登陆
+
+![](./images/1.png)
+
+- 新建文章
+
+![](./images/2.png)
+
+- 获取分页号为1的文章，data中还含有一个Number字段标识文章的总数量，Articles字段存放分页号为1的文章，一个分页有6篇文章
+
+![](./images/5.png)
+
+- 更新文章
+
+![](./images/3.png)
+
+- 获取id为1的文章
+
+![](./images/4.png)
 
 
 

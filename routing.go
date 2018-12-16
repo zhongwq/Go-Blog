@@ -39,7 +39,7 @@ GET, POST /user
   POST /user/unfollow
 
 GET, POST /tag
-  GET, PUT /tag/{tag_id}
+  GET /tag/{tag_id}
 `
 		w.WriteHeader(200)
 		w.Write([]byte(str))
