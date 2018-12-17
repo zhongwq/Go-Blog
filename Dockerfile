@@ -6,4 +6,4 @@ RUN go get github.com/gorilla/mux
 RUN go get github.com/boltdb/bolt
 RUN go get -v github.com/GoProjectGroupForEducation/Go-Blog
 EXPOSE 8081
-ENTRYPOINT ["./Go-Blog"]
+ENTRYPOINT ["Go-Blog"]
