@@ -1,12 +1,10 @@
 package models
 
 import (
-	"encoding/json"
 	"fmt"
-	"strconv"
-	"time"
-
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
+	_ "github.com/go-sql-driver/mysql"
+	"time"
 )
 
 type ArticlePage struct {
@@ -37,146 +35,151 @@ type Article struct {
 }
 
 func GetAllArticles() []ArticleList {
-	db := &utils.DB{}
-	var articles []ArticleList
-	var article ArticleList
-	var articlesBytes map[string]string
-	articlesBytes = db.Scan("article")
-	if len(articlesBytes) == 0 {
-		return []ArticleList{}
+	articles := []ArticleList{}
+
+	// 选择所有的文章id
+	row, err := utils.GetConn().Query("SELECT a.id FROM Articles a")
+	if err != nil {
+		fmt.Println("error:", err)
 	}
-	for _, one := range articlesBytes {
-		err := json.Unmarshal([]byte(one), &article)
-		article.Author = *GetUserListByID(article.AuthorId)
-		article.Comments = GetAllCommentsByArticleID(article.ID)
-		if article.Comments == nil {
-			fmt.Println(1)
-		}
-		articles = append(articles, article)
-		if err != nil {
-			panic(err)
-		}
+	for row.Next() {
+		articleId := -1
+		err = row.Scan(&articleId)
+		articles = append(articles, *GetArticleByID(articleId))
 	}
 	return articles
 }
 
-func CreateArticle(article Article) int {
-	db := &utils.DB{}
-	id := db.GenerateID("article")
-	article.ID = id
-	article.CreatedAt = time.Now()
-	article.UpdatedAt = time.Now()
-	for _, val := range article.Tags {
-		CreateTag(val.Content)
-	}
-	buff, err := json.Marshal(article)
+func CreateArticle(article Article) bool {
+	// 向Articles表添加条目
+	stmt, err := utils.GetConn().Prepare("insert into Articles values (?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		panic("JSON parsing error")
+		panic("db insert prepare error")
 	}
-	db.Set("article", strconv.Itoa(id), string(buff))
-	return id
+	_, err = stmt.Exec(nil, article.Title, article.Content, time.Now(), article.Author)
+	if err != nil {
+		panic("db insert error")
+	}
+	for _, v := range article.Tags {
+		CreateTag(v.Content)
+
+		// 向postTags表添加条目
+		stmt, err = utils.GetConn().Prepare("insert into postTags values (?, ?, ?, ?)")
+		if err != nil {
+			panic("db insert prepare error")
+		}
+		tagid := getTagId(v.Content)
+		_, err = stmt.Exec(time.Now(), time.Now(), article.ID, tagid)
+		if err != nil {
+			panic("db insert error")
+		}
+	}
+	return true
 }
 
 func GetArticleByID(id int) *ArticleList {
-	db := &utils.DB{}
-	buff := db.Get("article", strconv.Itoa(id))
-	if len(buff) == 0 {
-		return nil
-	}
 	article := ArticleList{}
-	err := json.Unmarshal(buff, &article)
-	article.Author = *GetUserListByID(article.AuthorId)
-	article.Comments = GetAllCommentsByArticleID(article.ID)
+	row, err := utils.GetConn().Query("SELECT * FROM Articles a WHERE a.id=?", id)
 	if err != nil {
-		panic(err)
+		fmt.Println("error:", err)
 	}
+	for row.Next() {
+		err = row.Scan(&article.ID, &article.Title, &article.Content, nil, article.UpdatedAt, article.AuthorId)
+		article.Author = *GetUserListByID(article.AuthorId)
+
+		// 寻找文章拥有的tag
+		row2, err := utils.GetConn().Query("SELECT t.content FROM Tags t, postTags p WHERE t.id=p.TagId and p.ArticleId=?", article.ID)
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		tags := []Tag{}
+		for row2.Next() {
+			tag := Tag{}
+			err = row2.Scan(&tag.Content)
+			tags = append(tags, tag)
+		}
+		article.Tags = tags
+
+		// 寻找文章拥有的评论
+		row3, err := utils.GetConn().Query("SELECT c.id, c.content, c.createdAt, c.ArticleId, c.authorId FROM Comment c WHERE c.ArticleId=?", article.ID)
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		comments := []CommentList{}
+		for row3.Next() {
+			comment := CommentList{}
+			err = row3.Scan(&comment.ID, &comment.Content, &comment.ArticleID, &comment.CreatorID)
+			comment.Creator = *GetUserListByID(comment.CreatorID)
+			comments = append(comments, comment)
+		}
+		article.Comments = comments
+	}
+
 	return &article
 }
 
 func GetArticleByUserID(id int) []ArticleList {
-	db := &utils.DB{}
 	articles := []ArticleList{}
-	var article ArticleList
-	var articlesBytes map[string]string
-	articlesBytes = db.Scan("article")
-	if len(articlesBytes) == 0 {
-		return []ArticleList{}
+	row, err := utils.GetConn().Query("SELECT a.id FROM Articles a WHERE a.authorId=?", id)
+	if err != nil {
+		fmt.Println("error:", err)
 	}
-	for _, one := range articlesBytes {
-		err := json.Unmarshal([]byte(one), &article)
-		if article.AuthorId == id {
-			article.Author = *GetUserListByID(article.AuthorId)
-			article.Comments = GetAllCommentsByArticleID(article.ID)
-			articles = append(articles, article)
-		}
-		if err != nil {
-			panic(err)
-		}
+	for row.Next() {
+		articleId := -1
+		err = row.Scan(&articleId)
+		articles = append(articles, *GetArticleByID(articleId))
 	}
 	return articles
 }
 
 func UpdateArticleByID(article Article) bool {
-	db := &utils.DB{}
-	buff := db.Get("article", strconv.Itoa(article.ID))
-	if len(buff) == 0 {
-		return false
-	}
-	buff, err := json.Marshal(article)
-	for _, val := range article.Tags {
-		CreateTag(val.Content)
-	}
+	stmt, err := utils.GetConn().Prepare("update user set title=?, content=?, createdAt=?, updatedAt=?, authorId=? where id=?")
 	if err != nil {
-		panic("JSON parsing error")
+		fmt.Println("error:", err)
 	}
-	db.Set("article", strconv.Itoa(article.ID), string(buff))
+	_, err = stmt.Exec(article.Title, article.Content, article.CreatedAt, time.Now(), article.Author, article.ID)
+	if err != nil {
+		panic(err)
+	}
+
 	return true
 }
 
 func GetArticlesByTag(tag string) []ArticleList {
-	db := &utils.DB{}
-	var articles []ArticleList
-	var article ArticleList
-	var articlesBytes map[string]string
-	articlesBytes = db.Scan("article")
-	if len(articlesBytes) == 0 {
-		return []ArticleList{}
+	articles := []ArticleList{}
+
+	// 先从tag表中找到tagid
+	row, err := utils.GetConn().Query("SELECT t.id FROM Tags t WHERE t.content=?", tag)
+	if err != nil {
+		fmt.Println("error:", err)
 	}
-	for _, one := range articlesBytes {
-		err := json.Unmarshal([]byte(one), &article)
-		for _,v := range article.Tags {
-			if v.Content == tag {
-				article.Author = *GetUserListByID(article.AuthorId)
-				article.Comments = GetAllCommentsByArticleID(article.ID)
-				articles = append(articles, article)
-			}
-		}
+	for row.Next() {
+		tagId := -1
+		err = row.Scan(&tagId)
+		// 再从postTag表中根据tagid找到对应的articleid
+		row2, err := utils.GetConn().Query("SELECT p.ArticleId FROM postTags p WHERE p.TagId=?", tagId)
 		if err != nil {
-			panic(err)
+			fmt.Println("error:", err)
+		}
+		for row2.Next() {
+			articleId := -1
+			err = row2.Scan(&articleId)
+			articles = append(articles, *GetArticleByID(articleId))
 		}
 	}
 	return articles
 }
 
 func GetArticlesPerPage(pageNum int) ArticlePage {
-	db := &utils.DB{}
-	var articles ArticlePage
-	var article ArticleList
-	articlesBytes := db.Scan("article")
-	if len(articlesBytes) == 0 {
-		return ArticlePage{0, []ArticleList{}}
-	}
-	articles.Number = len(articlesBytes)
-	var i = 0
-	for _, one := range articlesBytes {
-		err := json.Unmarshal([]byte(one), &article)
+	articlePage := ArticlePage{}
+	allArticles := GetAllArticles()
+	articlePage.Number = len(allArticles)
+	i := 0
+	for range allArticles {
 		if i >= (pageNum-1)*6 && i < pageNum * 6 {
-			articles.Articles = append(articles.Articles, article)
-		}
-		if err != nil {
-			panic(err)
+			articlePage.Articles = append(articlePage.Articles, allArticles[i])
 		}
 		i = i + 1
 	}
-	return articles
+	return articlePage
 }

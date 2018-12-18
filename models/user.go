@@ -1,11 +1,9 @@
 package models
 
 import (
-	"encoding/json"
-	"strconv"
-	"time"
-
+	"fmt"
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
+	"time"
 )
 
 type UserList struct {
@@ -39,48 +37,49 @@ type User struct {
 	Iconpath string `json:"iconpath"`
 }
 
-func GetAllUsers() []User {
-	db := &utils.DB{}
-	var Users []User
-	var user User
-	var UsersBytes map[string]string
-	UsersBytes = db.Scan("user")
-	if len(UsersBytes) == 0 {
-		return []User{}
-	}
-	for _, one := range UsersBytes {
-		err := json.Unmarshal([]byte(one), &user)
-		Users = append(Users, user)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return Users
-}
-
-func CreateUser(user User) int {
-	db := &utils.DB{}
-	id := db.GenerateID("user")
-	user.UserID = id
-	user.CreatedAt = time.Now()
-	user.Following = []int{}
-	user.Followers = []int{}
-	buff, err := json.Marshal(user)
+func CreateUser(user User) bool {
+	stmt, err := utils.GetConn().Prepare("insert into user values (?, ?, ?, ?, ? , ?, ?, ?)")
 	if err != nil {
-		panic("JSON parsing error")
+		panic("db insert prepare error")
 	}
-	db.Set("user", strconv.Itoa(id), string(buff))
-	return id
+	_, err = stmt.Exec(nil, user.Username, user.Email, user.Password, user.Iconpath, time.Now(), time.Now(), nil)
+	if err != nil {
+		panic("db insert error")
+	}
+	for _, v := range user.Followers {
+		stmt, err := utils.GetConn().Prepare("insert into userRelations values (?, ?, ?, ?)")
+		if err != nil {
+			panic("db insert prepare error")
+		}
+		_, err = stmt.Exec(time.Now(), time.Now(), user.UserID, v)
+	}
+	for _, v := range user.Following {
+		stmt, err := utils.GetConn().Prepare("insert into userRelations values (?, ?, ?, ?)")
+		if err != nil {
+			panic("db insert prepare error")
+		}
+		_, err = stmt.Exec(time.Now(), time.Now(), v, user.UserID)
+	}
+
+	return true
 }
 
 func GetUserByID(id int) *User {
-	db := &utils.DB{}
-	buff := db.Get("user", strconv.Itoa(id))
-	if len(buff) == 0 {
-		return nil
-	}
 	user := User{}
-	err := json.Unmarshal(buff, &user)
+	row, err := utils.GetConn().Query("SELECT * FROM user WHERE user.id = ? ", string(id))
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	for row.Next() {
+		err = row.Scan(&user.UserID, &user.Username, &user.Email, &user.Password, &user.Iconpath)
+		for _, v := range GetUserFollowers(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+		for _, v := range GetUserFollowing(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+	}
+
 	if err != nil {
 		panic(err)
 	}
@@ -88,13 +87,20 @@ func GetUserByID(id int) *User {
 }
 
 func GetUserDetailByID(id int) *UserDetail {
-	db := &utils.DB{}
-	buff := db.Get("user", strconv.Itoa(id))
-	if len(buff) == 0 {
-		return nil
-	}
 	user := UserDetail{}
-	err := json.Unmarshal(buff, &user)
+	row, err := utils.GetConn().Query("SELECT * FROM user WHERE user.id = ? ", string(id))
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	for row.Next() {
+		err = row.Scan(&user.UserID, &user.Username, &user.Email, &user.Iconpath)
+		for _, v := range GetUserFollowers(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+		for _, v := range GetUserFollowing(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+	}
 	user.Articles = GetArticleByUserID(id)
 	if err != nil {
 		panic(err)
@@ -103,13 +109,21 @@ func GetUserDetailByID(id int) *UserDetail {
 }
 
 func GetUserByID_noPassword(id int) *UserList {
-	db := &utils.DB{}
-	buff := db.Get("user", strconv.Itoa(id))
-	if len(buff) == 0 {
-		return nil
-	}
 	user := UserList{}
-	err := json.Unmarshal(buff, &user)
+	row, err := utils.GetConn().Query("SELECT * FROM user WHERE user.id = ? ", string(id))
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	for row.Next() {
+		err = row.Scan(&user.UserID, &user.Username, &user.Email, nil, &user.Iconpath)
+		for _, v := range GetUserFollowers(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+		for _, v := range GetUserFollowing(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+	}
+
 	if err != nil {
 		panic(err)
 	}
@@ -117,24 +131,23 @@ func GetUserByID_noPassword(id int) *UserList {
 }
 
 func GetUserByUsername(username string) *User {
-	db := &utils.DB{}
+	user := User{}
 	id := -1
-	var usertemp UserList
-	var UsersBytes map[string]string
-	UsersBytes = db.Scan("user")
-	for _, one := range UsersBytes {
-		json.Unmarshal([]byte(one), &usertemp)
-		if usertemp.Username == username{
-			id = usertemp.UserID
-			break;
+	row, err := utils.GetConn().Query("SELECT * FROM user WHERE user.username = ? ", username)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	for row.Next() {
+		err = row.Scan(&user.UserID, &user.Username, &user.Email, &user.Iconpath)
+		id = user.UserID
+		for _, v := range GetUserFollowers(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+		for _, v := range GetUserFollowing(id) {
+			user.Followers = append(user.Followers, v.UserID)
 		}
 	}
-	buff := db.Get("user", strconv.Itoa(id))
-	if len(buff) == 0 {
-		return nil
-	}
-	user := User{}
-	err := json.Unmarshal(buff, &user)
+
 	if err != nil {
 		panic(err)
 	}
@@ -142,27 +155,53 @@ func GetUserByUsername(username string) *User {
 }
 
 func UpdateUserByID(id int, user User) bool {
-	db := &utils.DB{}
-	buff := db.Get("user", strconv.Itoa(id))
-	if len(buff) == 0 {
-		return false
-	}
-	buff, err := json.Marshal(user)
+	stmt, err := utils.GetConn().Prepare("update user set username=?, email=?, password=?, iconPath=?, createdAt=?, updatedAt where id=?")
 	if err != nil {
-		panic("JSON parsing error")
+		fmt.Println("error:", err)
 	}
-	db.Set("user", strconv.Itoa(id), string(buff))
+	_, err = stmt.Exec(user.Username, user.Email, user.Password, user.Iconpath, user.CreatedAt, time.Now(),id)
+	if err != nil {
+		panic(err)
+	}
+	for _, v := range user.Following {
+		stmt, err := utils.GetConn().Prepare("update userRelations set createdAt=?, updatedAt=?, UserId=? where followerId=?")
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		_, err = stmt.Exec(user.CreatedAt, time.Now(), v, id)
+		if err != nil {
+			panic(err)
+		}
+	}
+	for _, v := range user.Followers {
+		stmt, err := utils.GetConn().Prepare("update userRelations set createdAt=?, updatedAt=?, followerId=? where UserId=?")
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		_, err = stmt.Exec(user.CreatedAt, time.Now(), v, id)
+		if err != nil {
+			panic(err)
+		}
+	}
 	return true
 }
 
 func GetUserListByID(id int) *UserList {
-	db := &utils.DB{}
-	buff := db.Get("user", strconv.Itoa(id))
-	if len(buff) == 0 {
-		return nil
-	}
 	user := UserList{}
-	err := json.Unmarshal(buff, &user)
+	row, err := utils.GetConn().Query("SELECT * FROM user WHERE user.id = ? ", string(id))
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	for row.Next() {
+		err = row.Scan(&user.UserID, &user.Username, &user.Email, nil, &user.Iconpath)
+		for _, v := range GetUserFollowers(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+		for _, v := range GetUserFollowing(id) {
+			user.Followers = append(user.Followers, v.UserID)
+		}
+	}
+
 	if err != nil {
 		panic(err)
 	}
@@ -171,18 +210,32 @@ func GetUserListByID(id int) *UserList {
 
 func GetUserFollowing(id int) []UserList {
 	users := []UserList{}
-	user := GetUserByID(id)
-	for _, one := range user.Following {
-		users = append(users, *GetUserListByID(one))
+
+	rows, err := utils.GetConn().Query("SELECT B.id, B.username, B.email  FROM userRelations A, user B WHRER A.followerId = ? and A.UserId = B.id", id)
+	if err != nil {
+		fmt.Println("error:", err)
 	}
+	for rows.Next() {
+		user := UserList{}
+		err = rows.Scan(&user.UserID, &user.Username, &user.Email)
+		users = append(users, user)
+	}
+
 	return users
 }
 
 func GetUserFollowers(id int) []UserList {
 	users := []UserList{}
-	user := GetUserByID(id)
-	for _, one := range user.Followers {
-		users = append(users, *GetUserListByID(one))
+
+	rows, err := utils.GetConn().Query("SELECT B.id, B.username, B.email  FROM userRelations A, user B WHRER A.UserId = ? and A.followerId = B.id", id)
+	if err != nil {
+		fmt.Println("error:", err)
 	}
+	for rows.Next() {
+		user := UserList{}
+		err = rows.Scan(&user.UserID, &user.Username, &user.Email)
+		users = append(users, user)
+	}
+
 	return users
 }

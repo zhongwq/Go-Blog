@@ -13,13 +13,13 @@ import (
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 )
 
-func GetAllUsers(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
-	res, err := json.Marshal(models.GetAllUsers())
-	if err != nil {
-		return err
-	}
-	return utils.SendData(w, string(res), "OK", http.StatusOK)
-}
+//func GetAllUsers(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
+//	res, err := json.Marshal(models.GetAllUsers())
+//	if err != nil {
+//		return err
+//	}
+//	return utils.SendData(w, string(res), "OK", http.StatusOK)
+//}
 
 func CreateUser(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	var user = models.User{}
