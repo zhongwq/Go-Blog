@@ -73,7 +73,7 @@ func CreateArticle(article Article) int {
 		if err != nil {
 			panic("db insert prepare error")
 		}
-		_, err = stmt.Exec(article.ID, v.Content)
+		_, err = stmt.Exec(id, v.Content)
 		if err != nil {
 			panic("db insert error")
 		}
