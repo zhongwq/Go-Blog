@@ -11,7 +11,7 @@ var DB *sql.DB
 var err error
 
 func init() {
-	DB, err = sql.Open("mysql", "root:zsy2720a@tcp(172.17.0.1:3306)/blogdb?charset=utf8&loc=Asia%2FShanghai&parseTime=true")
+	DB, err = sql.Open("mysql", "root:zsy2720a@tcp(178.128.91.57:3306)/blogdb?charset=utf8&loc=Asia%2FShanghai&parseTime=true")
 	if err != nil {
 		panic(err)
 	}
@@ -20,10 +20,10 @@ func init() {
 	users := `
     CREATE TABLE IF NOT EXISTS user(
         id INTEGER PRIMARY KEY AUTO_INCREMENT,
-        username VARCHAR(64) UNIQUE  NOT NULL,
-        email VARCHAR(64) NOT NULL,
-        password VARCHAR(64) NOT NULL,
-        iconPath VARCHAR(64) NOT NULL
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email TEXT NOT NULL,
+        password TEXT NOT NULL,
+        iconPath TEXT NOT NULL
     );
     `
 	_ ,err = DB.Exec(users)
@@ -46,7 +46,7 @@ func init() {
 	// Tags
 	tags := `
     CREATE TABLE IF NOT EXISTS Tags(
-        content VARCHAR(64) NOT NULL PRIMARY KEY
+        content VARCHAR(255) NOT NULL PRIMARY KEY
     );
     `
 	_ ,err = DB.Exec(tags)
@@ -58,8 +58,8 @@ func init() {
 	articles := `
     CREATE TABLE IF NOT EXISTS Articles(
         id INTEGER  PRIMARY KEY AUTO_INCREMENT,
-        title VARCHAR(64),
-        content VARCHAR(64),
+        title TEXT,
+        content MEDIUMTEXT,
       	createdAt DATETIME,
       	updatedAt DATETIME,
       	authorId INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -74,7 +74,7 @@ func init() {
 	comments := `
     CREATE TABLE IF NOT EXISTS Comments(
         id INTEGER  PRIMARY KEY AUTO_INCREMENT,
-        content VARCHAR(64),
+        content TEXT,
       	createdAt DATETIME,
       	updatedAt DATETIME,
       	articleId INTEGER NOT NULL REFERENCES Articles(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -90,7 +90,7 @@ func init() {
 	postTags := `
     CREATE TABLE IF NOT EXISTS postTags(
       	ArticleId INTEGER NOT NULL REFERENCES Articles(id) ON DELETE CASCADE ON UPDATE CASCADE,
-      	TagContent VARCHAR(64) NOT NULL REFERENCES Tags(content) ON DELETE CASCADE ON UPDATE CASCADE
+      	TagContent TEXT NOT NULL REFERENCES Tags(content) ON DELETE CASCADE ON UPDATE CASCADE
     );
     `
 

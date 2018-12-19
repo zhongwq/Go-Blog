@@ -184,12 +184,26 @@ func GetUserListByID(id int) *UserList {
 }
 
 func UpdateUserByID(id int, user User) bool {
-	stmt, err := utils.GetConn().Prepare("update user set username=?, email=?, password=?, iconPath=? where id=?")
+	stmt, err := utils.GetConn().Prepare("update user set username=?, email=?, password=? where id=?")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	_, err = stmt.Exec(user.Username, user.Email, user.Password, user.Iconpath, id)
+	_, err = stmt.Exec(user.Username, user.Email, user.Password, id)
 	if err != nil {
+		panic(err)
+	}
+
+	return true
+}
+
+func UpdateUserIconByID(id int, iconPath string) bool {
+	stmt, err := utils.GetConn().Prepare("update user set iconPath=? where id=?")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	_, err = stmt.Exec(iconPath, id)
+	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 

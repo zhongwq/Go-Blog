@@ -149,14 +149,27 @@ func UpdateUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	if tmpUser.Password == "" {
 		curUser.Email = tmpUser.Email
 		curUser.Username = tmpUser.Username
+	} else {
+		curUser = &tmpUser
 	}
-
 	isUpdated := models.UpdateUserByID(id, *curUser)
-	//如果通过id找不到用户就创建新用户
+
 	if !isUpdated {
 		return utils.SendData(w, "{}", "Error when updating", http.StatusBadRequest)
 	}
-	return utils.SendData(w, "{}", "Update successfully!", http.StatusOK)
+
+	newuser := models.GetUserByID(id)
+	data, err := json.Marshal(&models.UserList{newuser.UserID, newuser.Username, newuser.Email, newuser.Followers, newuser.Following, newuser.Iconpath})
+	if err != nil {
+		return err
+	}
+
+	token := services.GenerateAuthToken(newuser)
+
+	return utils.SendData(w, `{` +
+		`"user":` + string(data) + `,` +
+		`"token":"` + string(token.Token) +
+		`"}`, "Update successfully!", http.StatusOK)
 }
 
 
