@@ -8,17 +8,12 @@ type Tag struct {
 	Content string `json: "content"`
 }
 
-func CreateTag(tag string) int {
+func CreateTag(tag string) {
 	stmt, err := utils.GetConn().Prepare("insert into Tags values (?)")
 	if err != nil {
 		panic("db insert prepare error")
 	}
-	res, err := stmt.Exec(tag)
-	if err != nil {
-		panic("db insert error")
-	}
-	tagid, err := res.LastInsertId()
-	return int(tagid)
+	stmt.Exec(tag)
 }
 
 

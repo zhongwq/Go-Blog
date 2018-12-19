@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"time"
@@ -144,6 +145,33 @@ func UpdateArticleByID(article Article) bool {
 	_, err = stmt.Exec(article.Title, article.Content, time.Now(), article.ID)
 	if err != nil {
 		panic(err)
+	}
+
+	stmt, err = utils.GetConn().Prepare("delete from postTags where ArticleId = ?")
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
+	_, err = stmt.Exec(article.ID)
+	if err != nil {
+		panic("db update error")
+	}
+
+
+	for _, v := range article.Tags {
+		CreateTag(v.Content)
+
+		// 向postTags表添加条目
+		stmt, err = utils.GetConn().Prepare("insert into postTags(ArticleId, TagContent) values (?, ?)")
+		if err != nil {
+			panic("db insert prepare error")
+		}
+		_, err = stmt.Exec(article.ID, v.Content)
+		if err != nil {
+			panic("db insert error")
+		}
 	}
 
 	return true
