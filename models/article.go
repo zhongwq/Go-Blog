@@ -152,24 +152,15 @@ func UpdateArticleByID(article Article) bool {
 func GetArticlesByTag(tag string) []ArticleList {
 	articles := []ArticleList{}
 
-	// 先从tag表中找到tagid
-	row, err := utils.GetConn().Query("SELECT t.id FROM Tags t WHERE t.content=?", tag)
+	// 先从tag表中找到tagcontent
+	row, err := utils.GetConn().Query("SELECT p.ArticleId FROM postTags p WHERE p.TagContent=?", tag)
 	if err != nil {
 		panic(err)
 	}
 	for row.Next() {
-		tagId := -1
-		err = row.Scan(&tagId)
-		// 再从postTag表中根据tagid找到对应的articleid
-		row2, err := utils.GetConn().Query("SELECT p.ArticleId FROM postTags p WHERE p.TagId=?", tagId)
-		if err != nil {
-			panic(err)
-		}
-		for row2.Next() {
-			articleId := -1
-			err = row2.Scan(&articleId)
-			articles = append(articles, *GetArticleByID(articleId))
-		}
+		articleId := -1
+		err = row.Scan(&articleId)
+		articles = append(articles, *GetArticleByID(articleId))
 	}
 	return articles
 }
