@@ -37,16 +37,19 @@ type User struct {
 	Iconpath string `json:"iconpath"`
 }
 
-func CreateUser(user User) bool {
-	stmt, err := utils.GetConn().Prepare("insert into user values (?, ?, ?, ?, ? , ?, ?, ?)")
+func CreateUser(user User) int {
+	stmt, err := utils.GetConn().Prepare("insert into user(username, email, password, iconpath ) values (?, ?, ?, ?)")
 	if err != nil {
 		panic("db insert prepare error")
 	}
-	_, err = stmt.Exec(nil, user.Username, user.Email, user.Password, user.Iconpath, time.Now(), time.Now(), nil)
+	res, err := stmt.Exec(nil, user.Username, user.Email, user.Password, user.Iconpath)
 	if err != nil {
 		panic("db insert error")
 	}
-	for _, v := range user.Followers {
+
+	id, err := res.LastInsertId()
+
+	/*for _, v := range user.Followers {
 		stmt, err := utils.GetConn().Prepare("insert into userRelations values (?, ?, ?, ?)")
 		if err != nil {
 			panic("db insert prepare error")
@@ -59,8 +62,32 @@ func CreateUser(user User) bool {
 			panic("db insert prepare error")
 		}
 		_, err = stmt.Exec(time.Now(), time.Now(), v, user.UserID)
-	}
+	}*/
 
+	return int(id)
+}
+
+func Follow(userid int, followerid int) bool {
+	stmt, err := utils.GetConn().Prepare("insert into userRelations (UserId, followerId) values (?, ?)")
+	if err != nil {
+		panic("db insert prepare error")
+	}
+	_, err = stmt.Exec(userid, followerid)
+	if err != nil {
+		panic("db insert error")
+	}
+	return true
+}
+
+func Unfollow(userid int, followerid int) bool {
+	stmt, err := utils.GetConn().Prepare("delete from userRelations where Userid=?, followerId=?")
+	if err != nil {
+		panic("db insert prepare error")
+	}
+	_, err = stmt.Exec(userid, followerid)
+	if err != nil {
+		panic("db insert error")
+	}
 	return true
 }
 

@@ -8,9 +8,6 @@ import (
 )
 
 func GetAllTag(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
-	res, err := json.Marshal(models.ScanTag())
-	if err != nil {
-		return err
-	}
+	res := json.Marshal(models.GetAllTags())
 	return utils.SendData(w, string(res), "OK", http.StatusOK)
 }

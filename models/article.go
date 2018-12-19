@@ -68,7 +68,7 @@ func CreateArticle(article Article) bool {
 		if err != nil {
 			panic("db insert prepare error")
 		}
-		tagid := getTagId(v.Content)
+		tagid := GetTagId(v.Content)
 		_, err = stmt.Exec(time.Now(), time.Now(), article.ID, tagid)
 		if err != nil {
 			panic("db insert error")

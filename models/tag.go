@@ -10,7 +10,7 @@ type Tag struct {
 }
 
 func CreateTag(tag string) int {
-	if getTagId(tag) == -1 {
+	if GetTagId(tag) == -1 {
 		stmt, err := utils.GetConn().Prepare("insert into Tags values (?, ?, ?, ?)")
 		if err != nil {
 			panic("db insert prepare error")
@@ -25,7 +25,7 @@ func CreateTag(tag string) int {
 	return -1
 }
 
-func getTagId(content string) int {
+func GetTagId(content string) int {
 	row, err := utils.GetConn().Query("SELECT t.id FROM Tags t WHERE t.content=?", content)
 	if err != nil {
 		panic("error")
@@ -35,4 +35,18 @@ func getTagId(content string) int {
 		err = row.Scan(&tagid)
 	}
 	return tagid
+}
+
+func GetAllTags() []Tag {
+	tags := []Tag{}
+	row, err := utils.GetConn().Query("SELECT t.content FROM Tags t")
+	if err != nil {
+		panic("error")
+	}
+	for row.Next() {
+		tag := Tag{}
+		err = row.Scan(&tag.Content)
+		tags = append(tags, tag)
+	}
+	return tags
 }

@@ -36,9 +36,7 @@ func Auth(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 
 		if user != nil{
 			if user.Password == password {
-				token := services.GenerateAuthToken(user.UserID, username)
-				//token 转化为json
-				buff, err = json.Marshal(token)
+				token := services.GenerateAuthToken(user)
 
 				newuser := models.GetUserByID_noPassword(user.UserID)
 				data, err := json.Marshal(*newuser)
@@ -47,7 +45,7 @@ func Auth(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 				}
 				return utils.SendData(w, `{` +
 					`"user":` + string(data) + `,` +
-					`"token":` + string(buff) +
+					`"token":` + token.Token +
 					`}`, "OK", http.StatusOK)
 			}else {
 				return utils.SendData(w, string(buff), "Wrong password", http.StatusBadRequest)
