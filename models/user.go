@@ -215,13 +215,13 @@ func UpdateUserIconByID(id int, iconPath string) bool {
 func GetUserFollowing(id int) []UserList {
 	users := []UserList{}
 
-	rows, err := utils.GetConn().Query("SELECT B.id, B.username, B.email  FROM userRelations A, user B WHERE A.followerId = ? and A.UserId = B.id", id)
+	rows, err := utils.GetConn().Query("SELECT B.id, B.username, B.email, B.iconPath FROM userRelations A, user B WHERE A.followerId = ? and A.UserId = B.id", id)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	for rows.Next() {
 		user := UserList{}
-		err = rows.Scan(&user.UserID, &user.Username, &user.Email)
+		err = rows.Scan(&user.UserID, &user.Username, &user.Email, &user.Iconpath)
 		users = append(users, user)
 	}
 
@@ -231,13 +231,13 @@ func GetUserFollowing(id int) []UserList {
 func GetUserFollowers(id int) []UserList {
 	users := []UserList{}
 
-	rows, err := utils.GetConn().Query("SELECT B.id, B.username, B.email FROM userRelations A, user B WHERE A.UserId = ? and A.followerId = B.id", id)
+	rows, err := utils.GetConn().Query("SELECT B.id, B.username, B.email, B.iconPath FROM userRelations A, user B WHERE A.UserId = ? and A.followerId = B.id", id)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	for rows.Next() {
 		user := UserList{}
-		err = rows.Scan(&user.UserID, &user.Username, &user.Email)
+		err = rows.Scan(&user.UserID, &user.Username, &user.Email, &user.Iconpath)
 		users = append(users, user)
 	}
 
