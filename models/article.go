@@ -105,14 +105,14 @@ func GetArticleByID(id int) *ArticleList {
 		article.Tags = tags
 
 		// 寻找文章拥有的评论
-		row3, err := utils.GetConn().Query("SELECT c.id, c.content, c.createdAt, c.ArticleId, c.authorId FROM Comments c WHERE c.ArticleId=?", article.ID)
+		row3, err := utils.GetConn().Query("SELECT c.id, c.content, c.createdAt, c.articleId, c.authorId FROM Comments c WHERE c.articleId=?", article.ID)
 		if err != nil {
 			panic(err)
 		}
 		comments := []CommentList{}
 		for row3.Next() {
 			comment := CommentList{}
-			err = row3.Scan(&comment.ID, &comment.Content, &comment.ArticleID, &comment.CreatorID)
+			err = row3.Scan(&comment.ID, &comment.Content, &comment.CreatedAt, &comment.ArticleID, &comment.CreatorID)
 			comment.Creator = *GetUserListByID(comment.CreatorID)
 			comments = append(comments, comment)
 		}
@@ -137,11 +137,11 @@ func GetArticleByUserID(id int) []ArticleList {
 }
 
 func UpdateArticleByID(article Article) bool {
-	stmt, err := utils.GetConn().Prepare("update user set title=?, content=?, updatedAt=?, authorId=? where id=?")
+	stmt, err := utils.GetConn().Prepare("update Articles set title=?, content=?, updatedAt=? where id=?")
 	if err != nil {
 		panic(err)
 	}
-	_, err = stmt.Exec(article.Title, article.Content, time.Now(), article.Author, article.ID)
+	_, err = stmt.Exec(article.Title, article.Content, time.Now(), article.ID)
 	if err != nil {
 		panic(err)
 	}

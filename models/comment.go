@@ -44,13 +44,14 @@ func CreateComment(comment *Comment) int {
 
 func GetAllCommentsByArticleID(articleID int) []CommentList {
 	comments := []CommentList{}
-	row, err := utils.GetConn().Query("SELECT * FROM Comments c WHERE c.ArticleId = ? ", articleID)
+	row, err := utils.GetConn().Query("SELECT id, content, createdAt, articleId, authorId FROM Comments c WHERE c.ArticleId = ? ", articleID)
 	if err != nil {
-		fmt.Println("error:", err)
+		panic(err)
 	}
+
 	for row.Next() {
 		comment := CommentList{}
-		err = row.Scan(&comment.ID, &comment.Content, &comment.CreatedAt, nil, &comment.ArticleID, &comment.CreatorID)
+		err = row.Scan(&comment.ID, &comment.Content, &comment.CreatedAt, &comment.ArticleID, &comment.CreatorID)
 		comments = append(comments, comment)
 	}
 
@@ -61,11 +62,11 @@ func GetAllCommentsByArticleID(articleID int) []CommentList {
 }
 
 func UpdateCommentByID(comment Comment) bool {
-	stmt, err := utils.GetConn().Prepare("update user set content=?, updatedAt=?, ArticleId=?, authorId=? where id=?")
+	stmt, err := utils.GetConn().Prepare("update Comments set content=?, updatedAt=? where id=?")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	_, err = stmt.Exec(comment.Content, time.Now(), comment.ArticleID, comment.CreatorID, comment.ID)
+	_, err = stmt.Exec(comment.Content, time.Now(), comment.ArticleID)
 	if err != nil {
 		panic(err)
 	}
