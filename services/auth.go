@@ -45,26 +45,29 @@ func GenerateAuthToken(user *models.User) Token {
 }
 
 func GetCurrentUser(tokenStr string) *models.User {
-	token, _ := jwt.ParseWithClaims(tokenStr, &CustomerClaims{}, func(token *jwt.Token) (i interface{}, e error) {
+	token, err := jwt.ParseWithClaims(tokenStr[7:], &CustomerClaims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return SecretKey, nil
 	})
-	if claims, ok := token.Claims.(*CustomerClaims); ok && token.Valid {
-		return claims.User
-	} else {
-		return nil
+	if err == nil {
+		if claims, ok := token.Claims.(*CustomerClaims); ok && token.Valid {
+			username := claims.User.Username
+			return models.GetUserByUsername(username)
+		} else {
+			return nil
+		}
 	}
+	return nil
 }
 
-func AuthenticationGuard(w http.ResponseWriter, req *http.Request, next utils.NextFunc) {
+
+func AuthenticationGuard(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor,
 		func(token *jwt.Token) (i interface{}, e error) {
 			return SecretKey, nil
 		})
-	if err != nil {
-		if token.Valid {
-			next()
-		} else {
-			panic(utils.Exception{"Need to login first", http.StatusUnauthorized})
-		}
+	if err == nil && token.Valid {
+		return next()
+	} else {
+		panic(utils.Exception{"Need to login first", http.StatusUnauthorized})
 	}
 }

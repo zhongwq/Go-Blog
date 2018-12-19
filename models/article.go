@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"time"
@@ -21,7 +20,7 @@ type ArticleList struct {
 	Comments		  []CommentList	`json:"comments"`
 	Title     		  string 		`json:"title"`
 	Tags	  		  []Tag  		`json:"tags"`
-	UpdatedAt 		  string 		`json:"updated_at"`
+	UpdatedAt 		  time.Time 	`json:"updated_at"`
 }
 
 type Article struct {
@@ -38,9 +37,9 @@ func GetAllArticles() []ArticleList {
 	articles := []ArticleList{}
 
 	// 选择所有的文章id
-	row, err := utils.GetConn().Query("SELECT a.id FROM Articles a")
+	row, err := utils.GetConn().Query("SELECT id FROM Articles")
 	if err != nil {
-		fmt.Println("error:", err)
+		panic(err)
 	}
 	for row.Next() {
 		articleId := -1
@@ -50,47 +49,52 @@ func GetAllArticles() []ArticleList {
 	return articles
 }
 
-func CreateArticle(article Article) bool {
+func CreateArticle(article Article) int {
 	// 向Articles表添加条目
-	stmt, err := utils.GetConn().Prepare("insert into Articles values (?, ?, ?, ?, ?, ?)")
+	stmt, err := utils.GetConn().Prepare("insert into Articles(title, content, createdAt, updatedAt, authorId) values (?, ?, ?, ?, ?)")
 	if err != nil {
 		panic("db insert prepare error")
 	}
-	_, err = stmt.Exec(nil, article.Title, article.Content, time.Now(), article.Author)
+	res, err := stmt.Exec(article.Title, article.Content, time.Now(), time.Now(), article.Author)
 	if err != nil {
 		panic("db insert error")
 	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		panic("db insert error")
+	}
+
 	for _, v := range article.Tags {
 		CreateTag(v.Content)
 
 		// 向postTags表添加条目
-		stmt, err = utils.GetConn().Prepare("insert into postTags values (?, ?, ?, ?)")
+		stmt, err = utils.GetConn().Prepare("insert into postTags(ArticleId, TagContent) values (?, ?)")
 		if err != nil {
 			panic("db insert prepare error")
 		}
-		tagid := GetTagId(v.Content)
-		_, err = stmt.Exec(time.Now(), time.Now(), article.ID, tagid)
+		_, err = stmt.Exec(article.ID, v.Content)
 		if err != nil {
 			panic("db insert error")
 		}
 	}
-	return true
+	return int(id)
 }
 
 func GetArticleByID(id int) *ArticleList {
 	article := ArticleList{}
-	row, err := utils.GetConn().Query("SELECT * FROM Articles a WHERE a.id=?", id)
+	row, err := utils.GetConn().Query("SELECT id,title,content, updatedAt,authorId FROM Articles a WHERE a.id=?", id)
 	if err != nil {
-		fmt.Println("error:", err)
+		panic(err)
 	}
 	for row.Next() {
-		err = row.Scan(&article.ID, &article.Title, &article.Content, nil, article.UpdatedAt, article.AuthorId)
+		err = row.Scan(&article.ID, &article.Title, &article.Content, &article.UpdatedAt, &article.AuthorId)
 		article.Author = *GetUserListByID(article.AuthorId)
 
 		// 寻找文章拥有的tag
-		row2, err := utils.GetConn().Query("SELECT t.content FROM Tags t, postTags p WHERE t.id=p.TagId and p.ArticleId=?", article.ID)
+		row2, err := utils.GetConn().Query("SELECT t.content FROM Tags t, postTags p WHERE t.content=p.TagContent and p.ArticleId=?", article.ID)
 		if err != nil {
-			fmt.Println("error:", err)
+			panic(err)
 		}
 		tags := []Tag{}
 		for row2.Next() {
@@ -101,9 +105,9 @@ func GetArticleByID(id int) *ArticleList {
 		article.Tags = tags
 
 		// 寻找文章拥有的评论
-		row3, err := utils.GetConn().Query("SELECT c.id, c.content, c.createdAt, c.ArticleId, c.authorId FROM Comment c WHERE c.ArticleId=?", article.ID)
+		row3, err := utils.GetConn().Query("SELECT c.id, c.content, c.createdAt, c.ArticleId, c.authorId FROM Comments c WHERE c.ArticleId=?", article.ID)
 		if err != nil {
-			fmt.Println("error:", err)
+			panic(err)
 		}
 		comments := []CommentList{}
 		for row3.Next() {
@@ -122,7 +126,7 @@ func GetArticleByUserID(id int) []ArticleList {
 	articles := []ArticleList{}
 	row, err := utils.GetConn().Query("SELECT a.id FROM Articles a WHERE a.authorId=?", id)
 	if err != nil {
-		fmt.Println("error:", err)
+		panic(err)
 	}
 	for row.Next() {
 		articleId := -1
@@ -133,11 +137,11 @@ func GetArticleByUserID(id int) []ArticleList {
 }
 
 func UpdateArticleByID(article Article) bool {
-	stmt, err := utils.GetConn().Prepare("update user set title=?, content=?, createdAt=?, updatedAt=?, authorId=? where id=?")
+	stmt, err := utils.GetConn().Prepare("update user set title=?, content=?, updatedAt=?, authorId=? where id=?")
 	if err != nil {
-		fmt.Println("error:", err)
+		panic(err)
 	}
-	_, err = stmt.Exec(article.Title, article.Content, article.CreatedAt, time.Now(), article.Author, article.ID)
+	_, err = stmt.Exec(article.Title, article.Content, time.Now(), article.Author, article.ID)
 	if err != nil {
 		panic(err)
 	}
@@ -151,7 +155,7 @@ func GetArticlesByTag(tag string) []ArticleList {
 	// 先从tag表中找到tagid
 	row, err := utils.GetConn().Query("SELECT t.id FROM Tags t WHERE t.content=?", tag)
 	if err != nil {
-		fmt.Println("error:", err)
+		panic(err)
 	}
 	for row.Next() {
 		tagId := -1
@@ -159,7 +163,7 @@ func GetArticlesByTag(tag string) []ArticleList {
 		// 再从postTag表中根据tagid找到对应的articleid
 		row2, err := utils.GetConn().Query("SELECT p.ArticleId FROM postTags p WHERE p.TagId=?", tagId)
 		if err != nil {
-			fmt.Println("error:", err)
+			panic(err)
 		}
 		for row2.Next() {
 			articleId := -1

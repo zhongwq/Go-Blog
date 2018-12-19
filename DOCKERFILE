@@ -1,4 +1,0 @@
-FROM golang:1.8
-RUN go get github.com/GoProjectGroupForEducation/Go-Blog
-EXPOSE 8081
-ENTRYPOINT ["./Go-Blog"]

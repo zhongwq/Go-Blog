@@ -11,17 +11,14 @@ var DB *sql.DB
 var err error
 
 func init() {
-	DB, err = sql.Open("mysql", "root:limzhonglin@tcp(127.0.0.1:3306)/blogdb?charset=utf8")
+	DB, err = sql.Open("mysql", "root:zsy2720a@tcp(178.128.91.57:3306)/blogdb?charset=utf8&loc=Asia%2FShanghai&parseTime=true")
 	if err != nil {
-		fmt.Println("err")
-		fmt.Println(err)
-		return
-		//panic(err)
+		panic(err)
 	}
 
 	// Users
 	users := `
-    CREATE TABLE IF NOT EXISTS users(
+    CREATE TABLE IF NOT EXISTS user(
         id INTEGER PRIMARY KEY AUTO_INCREMENT,
         username VARCHAR(64) UNIQUE  NOT NULL,
         email VARCHAR(64) NOT NULL,
@@ -31,10 +28,7 @@ func init() {
     `
 	_ ,err = DB.Exec(users)
 	if err != nil {
-		fmt.Println("err")
-		fmt.Println(err)
-		return
-		//panic(err)
+		panic(err)
 	}
 	// UserRelations
 	userRelations := `
@@ -46,10 +40,7 @@ func init() {
 
 	_ ,err = DB.Exec(userRelations)
 	if err != nil {
-		fmt.Println("err")
-		fmt.Println(err)
-		return
-		//panic(err)
+		panic(err)
 	}
 
 	// Tags
@@ -60,29 +51,23 @@ func init() {
     `
 	_ ,err = DB.Exec(tags)
 	if err != nil {
-		fmt.Println("err")
-		fmt.Println(err)
-		return
-		//panic(err)
+		panic(err)
 	}
 
 	// Articles
 	articles := `
-    CREATE TABLE IF NOT EXISTS Aticles(
+    CREATE TABLE IF NOT EXISTS Articles(
         id INTEGER  PRIMARY KEY AUTO_INCREMENT,
         title VARCHAR(64),
         content VARCHAR(64),
-      	createdAt DATE,
-      	updatedAt DATE,
+      	createdAt DATETIME,
+      	updatedAt DATETIME,
       	authorId INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
     );
     `
 	_ ,err = DB.Exec(articles)
 	if err != nil {
-		fmt.Println("err")
-		fmt.Println(err)
-		return
-		//panic(err)
+		panic(err)
 	}
 
 	// Comments
@@ -90,33 +75,28 @@ func init() {
     CREATE TABLE IF NOT EXISTS Comments(
         id INTEGER  PRIMARY KEY AUTO_INCREMENT,
         content VARCHAR(64),
-      	createdAt DATE,
-      	updatedAt DATE,
+      	createdAt DATETIME,
+      	updatedAt DATETIME,
       	articleId INTEGER NOT NULL REFERENCES Articles(id) ON DELETE CASCADE ON UPDATE CASCADE,
       	authorId INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
     );
     `
 	_ ,err = DB.Exec(comments)
 	if err != nil {
-		fmt.Println("err")
-		fmt.Println(err)
-		return
-		//panic(err)
+		panic(err)
 	}
 
 	// postTags
 	postTags := `
     CREATE TABLE IF NOT EXISTS postTags(
       	ArticleId INTEGER NOT NULL REFERENCES Articles(id) ON DELETE CASCADE ON UPDATE CASCADE,
-      	TagId INTEGER NOT NULL REFERENCES Tags(id) ON DELETE CASCADE ON UPDATE CASCADE
+      	TagContent VARCHAR(64) NOT NULL REFERENCES Tags(content) ON DELETE CASCADE ON UPDATE CASCADE
     );
     `
+
 	_ ,err = DB.Exec(postTags)
 	if err != nil {
-		fmt.Println("err")
-		fmt.Println(err)
-		return
-		//panic(err)
+		panic(err)
 	}
 
 	fmt.Println("Create database successfully!")

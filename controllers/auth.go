@@ -34,27 +34,27 @@ func Auth(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
 		//从数据库中搜索username，判断password是否匹配
 		user := models.GetUserByUsername(username)
 
-		if user != nil{
+		if user != nil {
 			if user.Password == password {
 				token := services.GenerateAuthToken(user)
 
-				newuser := models.GetUserByID_noPassword(user.UserID)
+				newuser := models.GetUserListByID(user.UserID)
 				data, err := json.Marshal(*newuser)
 				if err != nil {
 					return err
 				}
 				return utils.SendData(w, `{` +
 					`"user":` + string(data) + `,` +
-					`"token":` + token.Token +
-					`}`, "OK", http.StatusOK)
-			}else {
+					`"token":"` + string(token.Token) +
+					`"}`, "OK", http.StatusOK)
+			} else {
 				return utils.SendData(w, string(buff), "Wrong password", http.StatusBadRequest)
 			}
-		}else {
+		} else {
 			return utils.SendData(w, string(buff), "User not found", http.StatusBadRequest)
 		}
 
-	}else {
+	} else {
 		log.Println(req.Method, req.URL.String(), http.StatusBadRequest)
 		return utils.SendData(w, string(buff), "Please input username", http.StatusBadRequest)
 	}

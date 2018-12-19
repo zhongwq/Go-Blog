@@ -2,15 +2,14 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/GoProjectGroupForEducation/Go-Blog/services"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/GoProjectGroupForEducation/Go-Blog/models"
 	"github.com/GoProjectGroupForEducation/Go-Blog/utils"
+	"github.com/gorilla/mux"
 )
 
 //func GetAllUsers(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
@@ -26,24 +25,23 @@ func CreateUser(w http.ResponseWriter, req *http.Request, next utils.NextFunc) e
 
 	buff, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	//json转为对应的struct
 	err = json.Unmarshal(buff, &user)
 	if err != nil {
-		fmt.Println(err);
-		return err
+		panic(err)
 	}
 	//不能重复用户名
 	tempuser := models.GetUserByUsername(user.Username)
-	if tempuser != nil{
+	if tempuser != nil {
 		return utils.SendData(w, string(buff), "Username has been registered, retry.", http.StatusBadRequest)
 	}
 	user.Iconpath = "1.ico"
 	id := models.CreateUser(user)
 
-	newuser := models.GetUserByID(id)
+	newuser := models.GetUserListByID(id)
 	data, err := json.Marshal(*newuser)
 	if err != nil {
 		return err
@@ -53,8 +51,8 @@ func CreateUser(w http.ResponseWriter, req *http.Request, next utils.NextFunc) e
 
 	return utils.SendData(w, `{` +
   		`"user":` + string(data) + `,` +
-		`"token":` + token.Token +
-	`}`, "OK", http.StatusOK)
+		`"token":"` + string(token.Token) +
+	`"}`, "OK", http.StatusOK)
 }
 
 func FollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFunc) error {
@@ -67,9 +65,7 @@ func FollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 	if err != nil {
 		return err
 	}
-	header := req.Header
-	token := header.Get("Authorization")
-	currentUser := services.GetCurrentUser(token)
+	currentUser := services.GetCurrentUser(req.Header.Get("Authorization"))
 	id := tempuser.UserID
 	if err != nil {
 		return err
@@ -97,9 +93,7 @@ func UnfollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextF
 	if err != nil {
 		return err
 	}
-	header := req.Header
-	token := header.Get("Authorization")
-	currentUser := services.GetCurrentUser(token)
+	currentUser := services.GetCurrentUser(req.Header.Get("Authorization"))
 	id := tempuser.UserID
 	if err != nil {
 		return err

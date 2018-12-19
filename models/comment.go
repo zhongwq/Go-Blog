@@ -24,17 +24,22 @@ type Comment struct {
 	CreatorID int       `json:"creator_id"`
 }
 
-func CreateComment(comment *Comment) bool {
+func CreateComment(comment *Comment) int {
 	stmt, err := utils.GetConn().Prepare("insert into Comments values (?, ?, ?, ?, ? , ?)")
 	if err != nil {
 		panic("db insert prepare error")
 	}
-	_, err = stmt.Exec(nil, comment.Content, time.Now(), time.Now(), comment.ArticleID, comment.CreatorID)
+	res, err := stmt.Exec(nil, comment.Content, time.Now(), time.Now(), comment.ArticleID, comment.CreatorID)
 	if err != nil {
 		panic("db insert error")
 	}
 
-	return true
+	id, err := res.LastInsertId()
+	if err != nil {
+		panic("db insert error")
+	}
+
+	return int(id)
 }
 
 func GetAllCommentsByArticleID(articleID int) []CommentList {
