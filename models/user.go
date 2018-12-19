@@ -59,6 +59,7 @@ func Follow(userid int, followerid int) bool {
 	if err != nil {
 		panic("db insert prepare error")
 	}
+	fmt.Println(userid, followerid)
 	_, err = stmt.Exec(userid, followerid)
 	if err != nil {
 		panic("db insert error")
@@ -67,8 +68,9 @@ func Follow(userid int, followerid int) bool {
 }
 
 func Unfollow(userid int, followerid int) bool {
-	stmt, err := utils.GetConn().Prepare("delete from userRelations where Userid=?, followerId=?")
+	stmt, err := utils.GetConn().Prepare("delete from userRelations where Userid=? and followerId=?")
 	if err != nil {
+		fmt.Println(err)
 		panic("db insert prepare error")
 	}
 	_, err = stmt.Exec(userid, followerid)
@@ -92,7 +94,7 @@ func GetUserByID(id int) *User {
 			user.Followers = append(user.Followers, v.UserID)
 		}
 		for _, v := range GetUserFollowing(id) {
-			user.Followers = append(user.Followers, v.UserID)
+			user.Following = append(user.Following, v.UserID)
 		}
 	}
 
@@ -116,7 +118,7 @@ func GetUserDetailByID(id int) *UserDetail {
 			user.Followers = append(user.Followers, v.UserID)
 		}
 		for _, v := range GetUserFollowing(id) {
-			user.Followers = append(user.Followers, v.UserID)
+			user.Following = append(user.Following, v.UserID)
 		}
 		user.Articles = GetArticleByUserID(id)
 		if err != nil {
@@ -143,7 +145,7 @@ func GetUserByUsername(username string) *User {
 			user.Followers = append(user.Followers, v.UserID)
 		}
 		for _, v := range GetUserFollowing(id) {
-			user.Followers = append(user.Followers, v.UserID)
+			user.Following = append(user.Following, v.UserID)
 		}
 	}
 
@@ -172,7 +174,7 @@ func GetUserListByID(id int) *UserList {
 			user.Followers = append(user.Followers, v.UserID)
 		}
 		for _, v := range GetUserFollowing(id) {
-			user.Followers = append(user.Followers, v.UserID)
+			user.Following = append(user.Following, v.UserID)
 		}
 	}
 

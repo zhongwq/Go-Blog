@@ -34,7 +34,8 @@ func init() {
 	userRelations := `
     CREATE TABLE IF NOT EXISTS userRelations(
         UserId INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE ,
-        followerId INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+        followerId INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+		PRIMARY KEY (UserId, followerId)
     );
     `
 
@@ -90,7 +91,8 @@ func init() {
 	postTags := `
     CREATE TABLE IF NOT EXISTS postTags(
       	ArticleId INTEGER NOT NULL REFERENCES Articles(id) ON DELETE CASCADE ON UPDATE CASCADE,
-      	TagContent TEXT NOT NULL REFERENCES Tags(content) ON DELETE CASCADE ON UPDATE CASCADE
+      	TagContent VARCHAR(255) NOT NULL REFERENCES Tags(content) ON DELETE CASCADE ON UPDATE CASCADE,
+		PRIMARY KEY (ArticleId, TagContent)
     );
     `
 

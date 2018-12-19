@@ -75,7 +75,7 @@ func FollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextFun
 		return utils.SendData(w, "", "Cannot follow yourself.", http.StatusBadRequest)
 	}
 
-	if models.Follow(id, currentUser.UserID) {
+	if !models.Follow(id, currentUser.UserID) {
 		return utils.SendData(w, "{}", "Fail when following, please check input", http.StatusNotFound)
 	}
 
@@ -104,7 +104,7 @@ func UnfollowUserByID(w http.ResponseWriter, req *http.Request, next utils.NextF
 		return utils.SendData(w, "{}", "Cannot unfollow yourself.", http.StatusBadRequest)
 	}
 
-	if models.Unfollow(id, currentUser.UserID) {
+	if !models.Unfollow(id, currentUser.UserID) {
 		return utils.SendData(w, "{}", "Fail when unfollowing, please check input", http.StatusNotFound)
 	}
 
