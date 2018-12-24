@@ -18,7 +18,7 @@ func init() {
 			break
 		}
 		fmt.Println("Trying...")
-		time.Sleep(1000)
+		time.Sleep(time.Duration(2)*time.Second)
 		err = DB.Ping()
 	}
 
