@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"time"
 )
 
 var DB *sql.DB
@@ -12,8 +13,13 @@ var err error
 func init() {
 	DB, err = sql.Open("mysql", "blogdb:zsy2720a@tcp(172.17.0.1:3306)/blogdb?charset=utf8&loc=Asia%2FShanghai&parseTime=true")
 	err = DB.Ping()
-	if err != nil {
-		panic(err)
+	for {
+		if err == nil {
+			break
+		}
+		fmt.Println("Trying...")
+		time.Sleep(1000)
+		err = DB.Ping()
 	}
 
 	// Users
