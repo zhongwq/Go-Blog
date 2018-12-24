@@ -11,7 +11,7 @@ var DB *sql.DB
 var err error
 
 func init() {
-	DB, err = sql.Open("mysql", "root:zsy2720a@tcp(172.17.0.1:3306)/blogdb?charset=utf8&loc=Asia%2FShanghai&parseTime=true")
+	DB, err = sql.Open("mysql", "blogdb:zsy2720a@tcp(172.17.0.1:3306)/blogdb?charset=utf8&loc=Asia%2FShanghai&parseTime=true")
 	if err != nil {
 		panic(err)
 	}
