@@ -3,7 +3,6 @@ package utils
 import (
 	"database/sql"
 	"fmt"
-
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -12,6 +11,7 @@ var err error
 
 func init() {
 	DB, err = sql.Open("mysql", "blogdb:zsy2720a@tcp(172.17.0.1:3306)/blogdb?charset=utf8&loc=Asia%2FShanghai&parseTime=true")
+	err = DB.Ping()
 	if err != nil {
 		panic(err)
 	}
@@ -26,6 +26,8 @@ func init() {
         iconPath TEXT NOT NULL
     );
     `
+
+
 	_ ,err = DB.Exec(users)
 	if err != nil {
 		panic(err)
